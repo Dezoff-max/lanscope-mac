@@ -1,6 +1,14 @@
 // swift-tools-version: 5.9
 
+import Foundation
 import PackageDescription
+
+let optionalLocalExcludes = [
+    ".codex",
+    "Pasted Graphic.png",
+    "codex_prompt_macos_lan_scanner.md",
+    "roadmap_macos_lan_scanner.md"
+].filter { FileManager.default.fileExists(atPath: $0) }
 
 let package = Package(
     name: "LanScopeMac",
@@ -15,7 +23,6 @@ let package = Package(
             name: "LanScopeMac",
             path: ".",
             exclude: [
-                ".codex",
                 "docs",
                 "dist",
                 "script",
@@ -27,11 +34,8 @@ let package = Package(
                 "README.md",
                 "ROADMAP.md",
                 "PRIVACY.md",
-                "SECURITY.md",
-                "Pasted Graphic.png",
-                "codex_prompt_macos_lan_scanner.md",
-                "roadmap_macos_lan_scanner.md"
-            ],
+                "SECURITY.md"
+            ] + optionalLocalExcludes,
             sources: [
                 "App",
                 "Features",
