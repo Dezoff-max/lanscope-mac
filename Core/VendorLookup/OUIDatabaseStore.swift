@@ -17,10 +17,14 @@ enum OUIDatabaseStore {
     }
 
     static func loadBundledVendors(resourceName: String) -> [String: String] {
-        guard let url = Bundle.module.url(forResource: resourceName, withExtension: "json") else {
+        if let appBundleURL = Bundle.main.url(forResource: resourceName, withExtension: "json") {
+            return loadVendors(from: appBundleURL)
+        }
+
+        guard let swiftPMURL = Bundle.module.url(forResource: resourceName, withExtension: "json") else {
             return [:]
         }
-        return loadVendors(from: url)
+        return loadVendors(from: swiftPMURL)
     }
 
     static func loadUserVendors() -> [String: String] {

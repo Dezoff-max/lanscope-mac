@@ -35,6 +35,7 @@ Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 - Local IPv4 range detection.
 - Scan / Stop controls, progress reporting, and non-blocking scanning.
 - Ping-based discovery and TCP port scanning for common services: SSH, HTTP, HTTPS, SMB, AFP, VNC, RDP, and HTTP-alt.
+- Wi-Fi scanner for nearby networks with SSID, BSSID, signal, noise, channel, band, width, security, and PHY mode.
 - Configurable timeout and parallel scan limit.
 - ARP cache lookup through `/usr/sbin/arp` without root access.
 - Local IEEE OUI database in `Resources/oui.json` with 39k+ vendor records.
@@ -137,11 +138,13 @@ The release script updates app metadata, runs validation and tests, builds the a
 
 - `App/` - app entry point and app-level state.
 - `Features/Scanner` - scan screen and scan empty-state animation.
+- `Features/WiFi` - Wi-Fi network scanner screen and Wi-Fi results table.
 - `Features/Devices` - table, sidebar, and detail panel.
 - `Features/Favorites` - favorite devices.
 - `Features/History` - scan history.
 - `Features/Settings` - scanner, lookup, sample data, and theme settings.
 - `Core/NetworkScanner` - async scanner, TCP probes, service catalog.
+- `Core/WiFiScanner` - CoreWLAN Wi-Fi scan integration and Location Services permission bridge.
 - `Core/ARP` - macOS ARP cache reader.
 - `Core/VendorLookup` - local OUI lookup and database updates.
 - `Core/WakeOnLAN` - UDP magic packet support.
@@ -154,6 +157,7 @@ The release script updates app metadata, runs validation and tests, builds the a
 
 - ICMP discovery uses system `/sbin/ping`; the app does not use raw sockets and does not require root access.
 - TCP port scanning is implemented with Network.framework.
+- Wi-Fi scanning uses public CoreWLAN APIs and does not require root access. macOS may require Location Services permission before SSID and BSSID are visible.
 - MAC addresses are available only when macOS has the device in the ARP cache.
 - Vendor lookup depends on the local OUI database. Randomized or locally administered MAC addresses are shown as `Locally Administered`, and missing OUIs are shown as `Unknown`.
 

@@ -7,10 +7,12 @@ final class AppState: ObservableObject {
         didSet {
             if oldValue != selectedSection {
                 selectedDeviceIDs = []
+                selectedWiFiNetworkIDs = []
             }
         }
     }
     @Published var selectedDeviceIDs: Set<Device.ID> = []
+    @Published var selectedWiFiNetworkIDs: Set<WiFiNetwork.ID> = []
     @Published var selectedHistoryID: ScanHistory.ID? {
         didSet {
             if oldValue != selectedHistoryID {
@@ -19,6 +21,7 @@ final class AppState: ObservableObject {
         }
     }
     @Published var devices: [Device] = []
+    @Published var wifiNetworks: [WiFiNetwork] = []
     @Published var favorites: [Device] = []
     @Published var history: [ScanHistory] = []
     @Published var config: ScannerConfig {
@@ -28,13 +31,19 @@ final class AppState: ObservableObject {
     }
     @Published var progress: Double = 0
     @Published var isScanning = false
+    @Published var isWiFiScanning = false
     @Published var isUpdatingOUIDatabase = false
     @Published var vendorDatabaseCount: Int
     @Published var statusMessage = "Ready"
+    @Published var wifiStatusMessage = "Ready"
+    @Published var wifiInterfaceName: String?
 
     private let persistence: UserDefaultsStore
     private let scanner: NetworkScanner
+    private let wifiScanner: WiFiScanner
+    private var wifiLocationPermission: WiFiLocationPermission?
     private var scanTask: Task<Void, Never>?
+    private var wifiScanTask: Task<Void, Never>?
     private var animatedInsertionTask: Task<Void, Never>?
     private var pendingAnimatedDevices: [Device] = []
     private var currentScanDevices: [Device] = []
@@ -43,10 +52,12 @@ final class AppState: ObservableObject {
 
     init(
         persistence: UserDefaultsStore = .shared,
-        scanner: NetworkScanner = NetworkScanner()
+        scanner: NetworkScanner = NetworkScanner(),
+        wifiScanner: WiFiScanner = WiFiScanner()
     ) {
         self.persistence = persistence
         self.scanner = scanner
+        self.wifiScanner = wifiScanner
         var loadedConfig = persistence.loadConfig()
         if loadedConfig.ipRange.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             loadedConfig.ipRange = LocalNetworkInfo.suggestedRange() ?? ScannerConfig.defaultRange
@@ -77,6 +88,8 @@ final class AppState: ObservableObject {
         switch currentSection {
         case .scan:
             return devices
+        case .wifi:
+            return []
         case .favorites:
             return favorites
         case .history:
@@ -144,6 +157,54 @@ final class AppState: ObservableObject {
         }
         statusMessage = "Stopping scan..."
         scanTask?.cancel()
+    }
+
+    func startWiFiScan() {
+        guard !isWiFiScanning else {
+            return
+        }
+
+        selectedSection = .wifi
+        selectedDeviceIDs = []
+        selectedWiFiNetworkIDs = []
+        isWiFiScanning = true
+        wifiStatusMessage = "Requesting Wi-Fi access..."
+
+        wifiScanTask = Task { [weak self] in
+            guard let self else {
+                return
+            }
+
+            let permissionManager = wifiLocationPermission ?? WiFiLocationPermission()
+            wifiLocationPermission = permissionManager
+            let authorizationStatus = await permissionManager.requestAuthorizationIfNeeded()
+            if authorizationStatus == .denied || authorizationStatus == .restricted {
+                wifiStatusMessage = "Location permission is needed to show SSID and BSSID"
+            } else {
+                wifiStatusMessage = "Scanning nearby Wi-Fi networks..."
+            }
+
+            do {
+                let result = try await wifiScanner.scan(includeHidden: true)
+                withAnimation(.snappy(duration: 0.24)) {
+                    self.wifiNetworks = result.networks
+                }
+                wifiInterfaceName = result.interfaceName
+                isWiFiScanning = false
+                wifiScanTask = nil
+                wifiStatusMessage = result.networks.isEmpty
+                    ? "No Wi-Fi networks found"
+                    : "Scan complete"
+            } catch is CancellationError {
+                isWiFiScanning = false
+                wifiScanTask = nil
+                wifiStatusMessage = "Wi-Fi scan stopped"
+            } catch {
+                isWiFiScanning = false
+                wifiScanTask = nil
+                wifiStatusMessage = "Wi-Fi scan failed: \(error.localizedDescription)"
+            }
+        }
     }
 
     func useDetectedRange() {
@@ -277,6 +338,19 @@ final class AppState: ObservableObject {
         }
         ExportService.copyTSV(devices: exportableSelection)
         statusMessage = "Copied \(exportableSelection.count) row(s)"
+    }
+
+    func copyWiFiSSID(_ network: WiFiNetwork) {
+        DeviceActionService.copy(network.displaySSID)
+        wifiStatusMessage = "Copied SSID"
+    }
+
+    func copyWiFiBSSID(_ network: WiFiNetwork) {
+        guard network.bssid != "-" else {
+            return
+        }
+        DeviceActionService.copy(network.bssid)
+        wifiStatusMessage = "Copied BSSID"
     }
 
     private func handleScanEvent(_ event: ScanProgressEvent) {

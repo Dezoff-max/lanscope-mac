@@ -41,6 +41,7 @@ chmod +x "$APP_BINARY"
 
 find "$BUILD_DIR" -maxdepth 1 \( -name '*.bundle' -o -name '*.resources' \) -exec cp -R {} "$APP_RESOURCES/" \;
 cp "$ROOT_DIR/Resources/$ICON_FILE" "$APP_RESOURCES/$ICON_FILE"
+cp "$ROOT_DIR/Resources/oui.json" "$APP_RESOURCES/oui.json"
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -63,6 +64,10 @@ cat >"$INFO_PLIST" <<PLIST
   <string>APPL</string>
   <key>NSHumanReadableCopyright</key>
   <string>$APP_COPYRIGHT</string>
+  <key>NSLocationUsageDescription</key>
+  <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
   <key>LSMinimumSystemVersion</key>
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key>

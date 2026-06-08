@@ -2,6 +2,7 @@ import Foundation
 
 enum SidebarSection: String, CaseIterable, Identifiable {
     case scan
+    case wifi
     case favorites
     case history
     case settings
@@ -12,6 +13,8 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .scan:
             return "Scan"
+        case .wifi:
+            return "Wi-Fi"
         case .favorites:
             return "Favorites"
         case .history:
@@ -25,6 +28,8 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .scan:
             return "wave.3.right.circle"
+        case .wifi:
+            return "wifi"
         case .favorites:
             return "star"
         case .history:
@@ -38,6 +43,8 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .scan:
             return "🌐"
+        case .wifi:
+            return "📶"
         case .favorites:
             return "⭐️"
         case .history:

@@ -13,11 +13,13 @@ echo "running static validation..."
 required_dirs=(
   App
   Features/Scanner
+  Features/WiFi
   Features/Devices
   Features/Favorites
   Features/History
   Features/Settings
   Core/NetworkScanner
+  Core/WiFiScanner
   Core/ARP
   Core/VendorLookup
   Core/WakeOnLAN

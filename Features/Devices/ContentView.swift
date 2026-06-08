@@ -17,18 +17,22 @@ struct ContentView: View {
         .toolbar {
             ToolbarItemGroup {
                 Button {
-                    appState.startScan()
+                    if appState.currentSection == .wifi {
+                        appState.startWiFiScan()
+                    } else {
+                        appState.startScan()
+                    }
                 } label: {
-                    Label("Scan", systemImage: "play.fill")
+                    Label(appState.currentSection == .wifi ? "Scan Wi-Fi" : "Scan", systemImage: "play.fill")
                 }
-                .disabled(appState.isScanning)
+                .disabled(appState.currentSection == .wifi ? appState.isWiFiScanning : appState.isScanning)
 
                 Button {
                     appState.stopScan()
                 } label: {
                     Label("Stop", systemImage: "stop.fill")
                 }
-                .disabled(!appState.isScanning)
+                .disabled(appState.currentSection == .wifi || !appState.isScanning)
 
                 Menu {
                     Button("Export CSV") {
@@ -66,7 +70,7 @@ struct ContentView: View {
     }
 
     private var shouldShowDeviceDetail: Bool {
-        appState.selectedDevice != nil && appState.currentSection != .settings
+        appState.selectedDevice != nil && appState.currentSection != .settings && appState.currentSection != .wifi
     }
 
     @ViewBuilder
@@ -74,6 +78,8 @@ struct ContentView: View {
         switch appState.currentSection {
         case .scan:
             ScanView()
+        case .wifi:
+            WiFiScannerView()
         case .favorites:
             FavoritesView()
         case .history:

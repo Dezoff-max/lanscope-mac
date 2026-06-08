@@ -45,6 +45,14 @@ struct LanScopeMacApp: App {
 
                 Divider()
 
+                Button("Scan Wi-Fi") {
+                    appState.startWiFiScan()
+                }
+                .keyboardShortcut("w", modifiers: [.command, .shift])
+                .disabled(appState.isWiFiScanning)
+
+                Divider()
+
                 Button("Copy Selected Rows") {
                     appState.copySelectedRows()
                 }
