@@ -1,42 +1,44 @@
-# ROADMAP
+# Roadmap
 
 ## Phase 1 - MVP
 
-- SwiftUI shell: sidebar, scan table, detail panel, settings.
-- TCP-based discovery через Network.framework.
-- Популярные порты и service mapping.
+- SwiftUI shell with sidebar, scan table, detail panel, and settings.
+- TCP-based discovery with Network.framework.
+- Common service ports and service mapping.
 - ARP cache MAC lookup.
-- Полная локальная IEEE OUI-база и обновление из Settings.
-- Favorites, History, CSV/JSON export.
+- Full local IEEE OUI database and update flow from Settings.
+- Favorites, history, CSV export, and JSON export.
 - Sample data mode.
-- Компактный macOS split layout, app icon и DMG icon/layout.
+- Compact macOS split layout.
+- App icon, DMG icon, DMG Finder layout, and installation instructions.
 
-## Phase 2 - Scanner quality
+## Phase 2 - Scanner Quality
 
-- Более точные host discovery стратегии: Bonjour/mDNS, NetBIOS hints, UDP probes.
-- Улучшенная отмена активных port probes.
-- Adaptive timeout на основе latency.
-- Сохранение профилей портов.
-- Дополнительные OUI источники: MA-M/MA-S/CID, если понадобится более широкий vendor coverage.
+- Better host discovery strategies: Bonjour/mDNS, NetBIOS hints, and optional UDP probes.
+- Improved cancellation for active port probes.
+- Adaptive timeout based on observed latency.
+- Saved port profiles.
+- Additional OUI sources such as MA-M, MA-S, and CID if broader vendor coverage is needed.
 
-## Phase 3 - Admin workflows
+## Phase 3 - Admin Workflows
 
-- Массовые действия по выбранным устройствам.
-- Device notes/tags.
-- Сравнение двух сканов.
-- Фильтры по vendor, service, subnet, status.
-- Экспорт scan report в PDF.
+- Bulk actions for selected devices.
+- Device notes and tags.
+- Diff view for comparing two scans.
+- Filters by vendor, service, subnet, and status.
+- PDF scan reports.
 
 ## Phase 4 - Distribution
 
-- Подписанный `.app`.
-- DMG layout.
-- Notarization pipeline.
-- Sparkle-based update feed, если нужен self-update вне App Store.
+- Developer ID signed `.app`.
+- Hardened Runtime.
+- Notarized DMG.
+- Release automation.
+- Optional Sparkle update feed for direct distribution outside the App Store.
 
-## Phase 5 - Advanced visibility
+## Phase 5 - Advanced Visibility
 
-- Optional privileged helper только если появится явная потребность в raw ICMP/ARP scan.
-- Passive monitoring локальной сети.
-- SNMP/UPnP inventory plugins.
-- Secure credential vault integration для админ-действий.
+- Optional privileged helper only if raw ICMP or lower-level ARP scanning becomes necessary.
+- Passive local-network monitoring.
+- SNMP and UPnP inventory plugins.
+- Secure credential vault integration for admin actions.

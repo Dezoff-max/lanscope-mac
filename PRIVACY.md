@@ -1,29 +1,36 @@
-# PRIVACY
+# Privacy
 
-LanScope Mac работает локально на Mac пользователя.
+LanScope Mac runs locally on your Mac.
 
-## Данные
+## Stored Data
 
-Приложение может сохранять в UserDefaults:
+The app can store the following data in UserDefaults:
 
-- настройки сканирования;
-- избранные устройства;
-- историю последних сканов;
-- IP, hostname, MAC, vendor, ports, services и Last Seen для найденных устройств.
+- scanner settings
+- favorite devices
+- recent scan history
+- IP address, hostname, MAC address, vendor, ports, services, and last-seen timestamps for discovered devices
 
-## Сеть
+## Network Activity
 
-Приложение отправляет только локальные сетевые запросы, необходимые для сканирования указанного диапазона:
+The app sends only the local network requests required for the range selected by the user:
 
-- TCP connection probes на настроенные порты;
-- Wake-on-LAN UDP magic packet, если пользователь нажал Wake.
+- TCP connection probes for configured ports
+- system `/sbin/ping` probes for local discovery
+- Wake-on-LAN UDP magic packets when the user explicitly presses Wake
 
-## Внешние сервисы
+## External Services
 
-По умолчанию приложение не отправляет данные наружу, не использует аналитику и не обращается к облачным API.
+By default, LanScope Mac does not send data to external services, does not use analytics, and does not call cloud APIs.
 
-Если пользователь явно нажимает `Update OUI from IEEE` в Settings, приложение скачивает публичный CSV vendor assignments с `https://standards-oui.ieee.org/oui/oui.csv`. В этот запрос не добавляются найденные IP, MAC, hostname, история сканов или избранное.
+If the user explicitly presses `Update OUI from IEEE` in Settings, the app downloads public vendor assignment data from:
 
-## Права
+```text
+https://standards-oui.ieee.org/oui/oui.csv
+```
 
-Приложение не требует root-доступа. MAC lookup выполняется через локальный ARP cache macOS. Если MAC отсутствует в cache, приложение показывает `Unknown`.
+That request does not include discovered IP addresses, MAC addresses, hostnames, favorites, or scan history.
+
+## Permissions
+
+The MVP does not require root access. MAC lookup uses the local macOS ARP cache through `/usr/sbin/arp`. If a MAC address is not present in the ARP cache, the app shows `Unknown`.

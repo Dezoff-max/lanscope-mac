@@ -68,7 +68,9 @@ tell application "Finder"
     set theViewOptions to the icon view options of container window
     set arrangement of theViewOptions to not arranged
     set icon size of theViewOptions to 96
-    set background picture of theViewOptions to (POSIX file "$MOUNT_POINT/.background/DMGBackground.png")
+    try
+      set background picture of theViewOptions to (POSIX file "$MOUNT_POINT/.background/DMGBackground.png")
+    end try
     set position of item "LanScope Mac.app" of container window to {190, 225}
     set position of item "Applications" of container window to {470, 225}
     set position of item "README.md" of container window to {190, 335}

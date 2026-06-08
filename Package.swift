@@ -16,6 +16,7 @@ let package = Package(
             path: ".",
             exclude: [
                 ".codex",
+                "docs",
                 "dist",
                 "script",
                 "Tests",

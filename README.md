@@ -1,117 +1,137 @@
 # LanScope Mac
 
-LanScope Mac - нативное macOS 14+ приложение для локального LAN-сканирования. MVP на Swift, SwiftUI, MVVM, async/await и Network.framework.
+LanScope Mac is a native macOS 14+ LAN scanner for local network administrators. It is built with Swift, SwiftUI, MVVM, async/await, and Network.framework.
 
 Use LanScope Mac only on networks you own or are authorized to administer.
 
-## Что уже есть в MVP
+## Screenshots
 
-- ввод диапазона IP: `192.168.1.1-254`, полный диапазон `192.168.1.10-192.168.1.40`, одиночный IP или CIDR до 4096 хостов;
-- автоопределение локального IPv4 диапазона;
-- Scan / Stop, прогресс и неблокирующее сканирование;
-- ping-based discovery и TCP порт-скан популярных сервисов: SSH, HTTP, HTTPS, SMB, AFP, VNC, RDP, HTTP-alt;
-- ограничение параллельности и timeout в Settings;
-- ARP cache lookup через `/usr/sbin/arp` без root-доступа;
-- локальная IEEE OUI-база `Resources/oui.json` с 39k+ vendor records;
-- обновление OUI из Settings и через локальный скрипт `script/update_oui_database.rb`;
-- Favorites и History через UserDefaults;
-- CSV / JSON export и копирование строк в clipboard;
-- быстрые действия: Browser, SSH через Terminal, SMB, VNC, Copy IP, Copy MAC, Favorite, Wake-on-LAN;
-- sample data mode в Settings для проверки UI без реального сетевого сканирования.
-- app icon и DMG volume icon из `Resources/AppIcon.icns`.
+![Scan empty state](docs/screenshots/scan-empty.png)
+
+![Scan results](docs/screenshots/scan-results.png)
+
+![Settings](docs/screenshots/settings.png)
+
+## MVP Features
+
+- IP range input: `192.168.1.1-254`, full ranges such as `192.168.1.10-192.168.1.40`, single IP addresses, and CIDR ranges up to 4096 hosts.
+- Local IPv4 range detection.
+- Scan / Stop controls, progress reporting, and non-blocking scanning.
+- Ping-based discovery and TCP port scanning for common services: SSH, HTTP, HTTPS, SMB, AFP, VNC, RDP, and HTTP-alt.
+- Configurable timeout and parallel scan limit.
+- ARP cache lookup through `/usr/sbin/arp` without root access.
+- Local IEEE OUI database in `Resources/oui.json` with 39k+ vendor records.
+- OUI database updates from Settings or with `script/update_oui_database.rb`.
+- Favorites and scan history stored locally with UserDefaults.
+- CSV / JSON export and selected-row clipboard copy.
+- Quick actions: Browser, SSH through Terminal, SMB, VNC, Copy IP, Copy MAC, Favorite, and Wake-on-LAN.
+- Sample data mode in Settings for testing the UI without scanning a real network.
+- App icon, DMG volume icon, Finder layout, and custom DMG file icon from `Resources/AppIcon.icns`.
 
 ## Installation
 
-См. [INSTALL.md](INSTALL.md) для инструкции установки на русском и английском языке.
+See [INSTALL.md](INSTALL.md) for installation instructions.
 
-See [INSTALL.md](INSTALL.md) for Russian and English installation instructions.
+The current MVP DMG is unsigned and not notarized. For public distribution, use GitHub Releases and clearly mark unsigned builds.
 
-## Запуск в Xcode
+## Run in Xcode
 
-1. Откройте `Package.swift` в Xcode.
-2. Выберите scheme `LanScopeMac`.
-3. Убедитесь, что выбран My Mac.
-4. Нажмите Run.
+1. Open `Package.swift` in Xcode.
+2. Select the `LanScopeMac` scheme.
+3. Make sure the run destination is My Mac.
+4. Press Run.
 
-Если Xcode просит принять license, выполните в Terminal:
+If Xcode asks you to accept the license, run:
 
 ```bash
 sudo xcodebuild -license
 ```
 
-После этого Xcode/SwiftPM смогут полноценно собирать проект.
-
-## Запуск из Codex/Terminal
+## Run from Terminal
 
 ```bash
 /bin/bash ./script/build_and_run.sh
 ```
 
-Скрипт собирает SwiftPM target, создает локальный app bundle в `dist/LanScope Mac.app`, копирует resources и запускает приложение как обычное foreground macOS app.
+The script builds the SwiftPM executable target, stages a local app bundle in `dist/LanScope Mac.app`, copies resources, and launches it as a foreground macOS app.
 
-Проверка процесса:
+Process verification:
 
 ```bash
 /bin/bash ./script/build_and_run.sh --verify
 ```
 
-Статическая проверка, доступная даже до успешной Xcode-сборки:
+Static validation:
 
 ```bash
 /bin/bash ./script/validate_static.sh
 ```
 
-После принятия Xcode license также стоит выполнить:
+Tests:
 
 ```bash
 swift test
 ```
 
-## Vendor / OUI database
+## Vendor / OUI Database
 
-Bundled база уже включена в приложение и работает офлайн. Если нужно обновить ее из официального IEEE CSV:
+The bundled OUI database works offline. To update it from the official IEEE CSV:
 
 ```bash
 ./script/update_oui_database.rb
 ```
 
-Источник: `https://standards-oui.ieee.org/oui/oui.csv`.
+Source: `https://standards-oui.ieee.org/oui/oui.csv`.
 
-В приложении то же действие доступно в Settings -> Lookup -> Update OUI from IEEE. Пользовательская база сохраняется в `~/Library/Application Support/LanScope Mac/oui.json` и перекрывает bundled записи.
+The same action is available in Settings -> Lookup -> Update OUI from IEEE. User-updated data is stored in `~/Library/Application Support/LanScope Mac/oui.json` and takes precedence over bundled records.
 
-## DMG
-
-После успешной сборки можно создать локальный DMG:
+## Build a DMG
 
 ```bash
 /bin/bash ./script/package_dmg.sh
 ```
 
-Артефакт появится в `dist/LanScope Mac.dmg`. MVP DMG не подписан и не notarized.
+The artifact is created at `dist/LanScope Mac.dmg`.
 
-DMG содержит приложение с иконкой, volume icon, Finder layout с фоном, README/INSTALL/LICENSE/PRIVACY и ссылку на `/Applications`.
+The DMG contains:
 
-Готовый DMG не хранится в git-репозитории. Для публичной раздачи используйте GitHub Releases.
+- `LanScope Mac.app`
+- `/Applications` shortcut
+- `README.md`
+- `INSTALL.md`
+- `LICENSE`
+- `PRIVACY.md`
+- custom Finder layout and background
+- app, volume, and DMG file icons
 
-## Архитектура
+The DMG is intentionally not committed to git. Publish distributable builds through GitHub Releases.
 
-- `App/` - entry point и app-level state.
-- `Features/Scanner` - экран сканирования.
-- `Features/Devices` - таблица, sidebar, detail panel.
-- `Features/Favorites` - избранные устройства.
-- `Features/History` - история сканов.
-- `Features/Settings` - настройки scanner/theme/sample data mode.
+## Architecture
+
+- `App/` - app entry point and app-level state.
+- `Features/Scanner` - scan screen and scan empty-state animation.
+- `Features/Devices` - table, sidebar, and detail panel.
+- `Features/Favorites` - favorite devices.
+- `Features/History` - scan history.
+- `Features/Settings` - scanner, lookup, sample data, and theme settings.
 - `Core/NetworkScanner` - async scanner, TCP probes, service catalog.
-- `Core/ARP` - чтение macOS ARP cache.
-- `Core/VendorLookup` - локальный OUI lookup.
-- `Core/WakeOnLAN` - UDP magic packet.
-- `Core/Export` - CSV/JSON/clipboard export.
-- `Models/` - Device, ScannerConfig, ScanHistory.
+- `Core/ARP` - macOS ARP cache reader.
+- `Core/VendorLookup` - local OUI lookup and database updates.
+- `Core/WakeOnLAN` - UDP magic packet support.
+- `Core/Export` - CSV / JSON / clipboard export.
+- `Models/` - Device, ScannerConfig, ScanHistory, and related models.
 - `Persistence/` - UserDefaults persistence.
-- `Utilities/` - IP parser, local network detection, hostname resolver, actions.
+- `Utilities/` - IP parsing, local network detection, hostname resolution, and actions.
 
-## Ограничения MVP
+## MVP Limitations
 
-- ICMP discovery выполняется через системный `/sbin/ping`, без raw sockets и без root-доступа. TCP port scan сделан через Network.framework.
-- MAC-адрес виден только если устройство есть в ARP cache macOS.
-- Vendor определяется по локальной OUI-базе. Если OUI отсутствует в IEEE MA-L или адрес является randomized/locally administered, приложение показывает `Unknown` или `Locally Administered`.
+- ICMP discovery uses system `/sbin/ping`; the app does not use raw sockets and does not require root access.
+- TCP port scanning is implemented with Network.framework.
+- MAC addresses are available only when macOS has the device in the ARP cache.
+- Vendor lookup depends on the local OUI database. Randomized or locally administered MAC addresses are shown as `Locally Administered`, and missing OUIs are shown as `Unknown`.
+
+## Security And Privacy
+
+LanScope Mac is local-first. It does not send scan results, device data, favorites, or history to external services.
+
+See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md).
