@@ -7,6 +7,9 @@ DISPLAY_NAME="LanScope Mac"
 BUNDLE_ID="com.lanscope.mac"
 MIN_SYSTEM_VERSION="14.0"
 ICON_FILE="AppIcon.icns"
+APP_VERSION="0.1.0"
+APP_BUILD="1"
+APP_COPYRIGHT="Copyright © 2026 @rootoff. All rights reserved."
 
 SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
 if [[ "$SCRIPT_DIR" == "${BASH_SOURCE[0]}" ]]; then
@@ -52,8 +55,14 @@ cat >"$INFO_PLIST" <<PLIST
   <string>$ICON_FILE</string>
   <key>CFBundleName</key>
   <string>$DISPLAY_NAME</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$APP_VERSION</string>
+  <key>CFBundleVersion</key>
+  <string>$APP_BUILD</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
+  <key>NSHumanReadableCopyright</key>
+  <string>$APP_COPYRIGHT</string>
   <key>LSMinimumSystemVersion</key>
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key>

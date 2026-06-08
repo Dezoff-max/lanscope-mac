@@ -24,6 +24,12 @@ struct LanScopeMacApp: App {
                 )
         }
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About LanScope Mac") {
+                    AboutWindowController.shared.show()
+                }
+            }
+
             CommandMenu("Scanner") {
                 Button("Scan") {
                     appState.startScan()
