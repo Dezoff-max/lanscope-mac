@@ -8,6 +8,12 @@ The project uses semantic versioning while it is in MVP development.
 
 No unreleased changes yet.
 
+## [0.1.3] - 2026-06-08
+
+### Fixed
+
+- Fixed GitHub Actions compatibility for Wi-Fi PHY mode detection on older macOS SDK runners.
+
 ## [0.1.2] - 2026-06-08
 
 ### Added
@@ -46,7 +52,8 @@ No unreleased changes yet.
 - App icon, DMG volume icon, Finder layout, DMG file icon, and installation instructions.
 - Public GitHub repository with README, installation guide, privacy note, security policy, roadmap, screenshots, and CI.
 
-[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.1.0

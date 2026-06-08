@@ -114,8 +114,8 @@ final class WiFiScanner {
     }
 
     private static func phyModes(for network: CWNetwork) -> [String] {
-        let candidates: [(CWPHYMode, String)] = [
-            (.mode11be, "802.11be"),
+        let candidates: [(CWPHYMode?, String)] = [
+            (CWPHYMode(rawValue: 7), "802.11be"),
             (.mode11ax, "802.11ax"),
             (.mode11ac, "802.11ac"),
             (.mode11n, "802.11n"),
@@ -125,8 +125,10 @@ final class WiFiScanner {
         ]
 
         return candidates
-            .filter { network.supportsPHYMode($0.0) }
-            .map(\.1)
+            .compactMap { mode, label in
+                guard let mode, network.supportsPHYMode(mode) else { return nil }
+                return label
+            }
     }
 
     private static func bandDescription(_ band: CWChannelBand) -> String {
