@@ -12,7 +12,7 @@ Use LanScope Mac only on networks you own or are authorized to administer.
 
 ## Latest Release
 
-Latest version: [v0.1.4](https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.1.4)
+Latest version: [v0.1.5](https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.1.5)
 
 Download:
 
