@@ -1,0 +1,12 @@
+.build/
+dist/*
+!dist/.gitkeep
+.DS_Store
+.codex/
+Pasted Graphic.png
+codex_prompt_macos_lan_scanner.md
+roadmap_macos_lan_scanner.md
+*.xcuserstate
+*.xcuserdata/
+DerivedData/
+*.log
