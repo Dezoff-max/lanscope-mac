@@ -24,6 +24,7 @@ APP_MACOS="$APP_CONTENTS/MacOS"
 APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
+SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 
 echo "stopping existing $DISPLAY_NAME..."
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
@@ -77,6 +78,11 @@ cat >"$INFO_PLIST" <<PLIST
 </dict>
 </plist>
 PLIST
+
+echo "signing app bundle..."
+find "$APP_BUNDLE" \( -name _CodeSignature -o -name CodeResources \) -prune -exec rm -rf {} +
+codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
 
 open_app() {
   echo "launching $APP_BUNDLE..."
