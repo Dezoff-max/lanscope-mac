@@ -7,7 +7,7 @@ DISPLAY_NAME="LanScope Mac"
 BUNDLE_ID="com.lanscope.mac"
 MIN_SYSTEM_VERSION="14.0"
 ICON_FILE="AppIcon.icns"
-APP_VERSION="0.1.0"
+APP_VERSION="0.1.1"
 APP_BUILD="1"
 APP_COPYRIGHT="Copyright © 2026 @rootoff. All rights reserved."
 
