@@ -1,5 +1,9 @@
 # LanScope Mac
 
+![LanScope Mac preview](docs/preview/lanscope-mac-preview.png)
+
+[![CI](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml/badge.svg)](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml)
+
 LanScope Mac is a native macOS 14+ LAN scanner for local network administrators. It is built with Swift, SwiftUI, MVVM, async/await, and Network.framework.
 
 Use LanScope Mac only on networks you own or are authorized to administer.
