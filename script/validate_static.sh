@@ -38,6 +38,7 @@ done
 
 bash -n script/build_and_run.sh
 bash -n script/package_dmg.sh
+bash -n script/release.sh
 jq empty Resources/oui.json
 test -f Resources/AppIcon.icns || {
   echo "missing app icon: Resources/AppIcon.icns" >&2
@@ -59,10 +60,12 @@ forbidden_pattern="TODO|FIXME|fatalError|try!|\\.white\\b|Color\\.white\\b|NSPri
 scan_files=(
   Package.swift
   README.md
+  CHANGELOG.md
   ROADMAP.md
   PRIVACY.md
   script/build_and_run.sh
   script/package_dmg.sh
+  script/release.sh
   script/update_oui_database.rb
 )
 

@@ -21,6 +21,7 @@ let package = Package(
                 "script",
                 "Tests",
                 "CONTRIBUTING.md",
+                "CHANGELOG.md",
                 "INSTALL.md",
                 "LICENSE",
                 "README.md",

@@ -3,10 +3,22 @@
 ![LanScope Mac preview](docs/preview/lanscope-mac-preview.png)
 
 [![CI](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml/badge.svg)](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/Dezoff-max/lanscope-mac?sort=semver)](https://github.com/Dezoff-max/lanscope-mac/releases/latest)
 
 LanScope Mac is a native macOS 14+ LAN scanner for local network administrators. It is built with Swift, SwiftUI, MVVM, async/await, and Network.framework.
 
 Use LanScope Mac only on networks you own or are authorized to administer.
+
+## Latest Release
+
+Latest version: [v0.1.1](https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.1.1)
+
+Download:
+
+- [LanScope.Mac.dmg](https://github.com/Dezoff-max/lanscope-mac/releases/latest/download/LanScope.Mac.dmg)
+- [LanScope.Mac.dmg.sha256](https://github.com/Dezoff-max/lanscope-mac/releases/latest/download/LanScope.Mac.dmg.sha256)
+
+Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## Screenshots
 
@@ -109,6 +121,16 @@ The DMG contains:
 - app, volume, and DMG file icons
 
 The DMG is intentionally not committed to git. Publish distributable builds through GitHub Releases.
+
+## Release Workflow
+
+To publish a new version, update [CHANGELOG.md](CHANGELOG.md) first, then run:
+
+```bash
+/bin/bash ./script/release.sh 0.1.2
+```
+
+The release script updates app metadata, runs validation and tests, builds the app bundle and DMG, verifies the DMG checksum, commits the version bump, pushes `main`, creates tag `v0.1.2`, and publishes a GitHub Release with the DMG assets.
 
 ## Architecture
 
