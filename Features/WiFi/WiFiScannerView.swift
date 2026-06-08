@@ -40,10 +40,15 @@ struct WiFiScannerView: View {
             Divider()
 
             if sortedNetworks.isEmpty {
-                ContentUnavailableView(
-                    "No Wi-Fi Networks",
-                    systemImage: "wifi",
-                    description: Text("Run a Wi-Fi scan. macOS may require Location Services to show SSID and BSSID.")
+                RadarEmptyStateView(
+                    isScanning: appState.isWiFiScanning,
+                    isMockMode: false,
+                    idleTitle: "No Wi-Fi Networks",
+                    scanningTitle: "Scanning Wi-Fi",
+                    idleSystemImage: "wifi",
+                    scanningSystemImage: "dot.radiowaves.left.and.right",
+                    idleMessage: "Run a Wi-Fi scan. macOS may require Location Services to show SSID and BSSID.",
+                    scanningMessage: "Listening for nearby access points and radio channels."
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             } else {

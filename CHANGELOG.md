@@ -8,6 +8,13 @@ The project uses semantic versioning while it is in MVP development.
 
 No unreleased changes yet.
 
+## [0.1.4] - 2026-06-08
+
+### Changed
+
+- Matched the Wi-Fi scanner empty state animation with the main Scan view.
+- Added progressive animated Wi-Fi network insertion while scanning.
+
 ## [0.1.3] - 2026-06-08
 
 ### Fixed
@@ -52,7 +59,8 @@ No unreleased changes yet.
 - App icon, DMG volume icon, Finder layout, DMG file icon, and installation instructions.
 - Public GitHub repository with README, installation guide, privacy note, security policy, roadmap, screenshots, and CI.
 
-[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.0...v0.1.1

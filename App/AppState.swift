@@ -167,6 +167,9 @@ final class AppState: ObservableObject {
         selectedSection = .wifi
         selectedDeviceIDs = []
         selectedWiFiNetworkIDs = []
+        withAnimation(.snappy(duration: 0.22)) {
+            wifiNetworks = []
+        }
         isWiFiScanning = true
         wifiStatusMessage = "Requesting Wi-Fi access..."
 
@@ -186,15 +189,20 @@ final class AppState: ObservableObject {
 
             do {
                 let result = try await wifiScanner.scan(includeHidden: true)
-                withAnimation(.snappy(duration: 0.24)) {
-                    self.wifiNetworks = result.networks
-                }
                 wifiInterfaceName = result.interfaceName
-                isWiFiScanning = false
-                wifiScanTask = nil
-                wifiStatusMessage = result.networks.isEmpty
-                    ? "No Wi-Fi networks found"
-                    : "Scan complete"
+                if result.networks.isEmpty {
+                    isWiFiScanning = false
+                    wifiScanTask = nil
+                    wifiStatusMessage = "No Wi-Fi networks found"
+                } else {
+                    wifiStatusMessage = "Found 0 of \(result.networks.count) network(s)"
+                    let completed = await revealWiFiNetworks(result.networks)
+                    if completed {
+                        wifiStatusMessage = "Scan complete"
+                    }
+                    isWiFiScanning = false
+                    wifiScanTask = nil
+                }
             } catch is CancellationError {
                 isWiFiScanning = false
                 wifiScanTask = nil
@@ -351,6 +359,31 @@ final class AppState: ObservableObject {
         }
         DeviceActionService.copy(network.bssid)
         wifiStatusMessage = "Copied BSSID"
+    }
+
+    private func revealWiFiNetworks(_ networks: [WiFiNetwork]) async -> Bool {
+        for network in networks {
+            if Task.isCancelled {
+                return false
+            }
+
+            do {
+                try await Task.sleep(nanoseconds: 55_000_000)
+            } catch {
+                return false
+            }
+
+            withAnimation(.snappy(duration: 0.24)) {
+                if let index = wifiNetworks.firstIndex(where: { $0.id == network.id }) {
+                    wifiNetworks[index] = network
+                } else {
+                    wifiNetworks.append(network)
+                }
+            }
+            wifiStatusMessage = "Found \(wifiNetworks.count) of \(networks.count) network(s)"
+        }
+
+        return true
     }
 
     private func handleScanEvent(_ event: ScanProgressEvent) {

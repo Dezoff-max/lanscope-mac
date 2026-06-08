@@ -3,8 +3,34 @@ import SwiftUI
 struct RadarEmptyStateView: View {
     let isScanning: Bool
     let isMockMode: Bool
+    let idleTitle: String
+    let scanningTitle: String
+    let idleSystemImage: String
+    let scanningSystemImage: String
+    let idleMessage: String?
+    let scanningMessage: String?
 
     @Environment(\.colorScheme) private var colorScheme
+
+    init(
+        isScanning: Bool,
+        isMockMode: Bool,
+        idleTitle: String = "No Devices",
+        scanningTitle: String = "Scanning Network",
+        idleSystemImage: String = "point.3.connected.trianglepath.dotted",
+        scanningSystemImage: String = "network",
+        idleMessage: String? = nil,
+        scanningMessage: String? = nil
+    ) {
+        self.isScanning = isScanning
+        self.isMockMode = isMockMode
+        self.idleTitle = idleTitle
+        self.scanningTitle = scanningTitle
+        self.idleSystemImage = idleSystemImage
+        self.scanningSystemImage = scanningSystemImage
+        self.idleMessage = idleMessage
+        self.scanningMessage = scanningMessage
+    }
 
     var body: some View {
         ZStack {
@@ -12,13 +38,13 @@ struct RadarEmptyStateView: View {
                 .opacity(colorScheme == .dark ? 0.95 : 0.82)
 
             VStack(spacing: 7) {
-                Image(systemName: isScanning ? "network" : "point.3.connected.trianglepath.dotted")
+                Image(systemName: isScanning ? scanningSystemImage : idleSystemImage)
                     .font(.system(size: 32, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.secondary)
 
                 VStack(spacing: 4) {
-                    Text(isScanning ? "Scanning Network" : "No Devices")
+                    Text(isScanning ? scanningTitle : idleTitle)
                         .font(.title3.weight(.semibold))
                         .contentTransition(.opacity)
 
@@ -37,7 +63,13 @@ struct RadarEmptyStateView: View {
 
     private var message: String {
         if isScanning {
+            if let scanningMessage {
+                return scanningMessage
+            }
             return isMockMode ? "Sample devices are arriving." : "Waiting for local hosts and open services."
+        }
+        if let idleMessage {
+            return idleMessage
         }
         return "Run a scan or enable sample data in Settings."
     }
