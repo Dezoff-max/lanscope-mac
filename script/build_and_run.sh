@@ -81,6 +81,7 @@ PLIST
 
 echo "signing app bundle..."
 find "$APP_BUNDLE" \( -name _CodeSignature -o -name CodeResources \) -prune -exec rm -rf {} +
+xattr -cr "$APP_BUNDLE"
 codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
 codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
 

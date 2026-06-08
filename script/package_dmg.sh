@@ -88,6 +88,9 @@ then
   echo "warning: Finder DMG layout automation failed; continuing with packaged files" >&2
 fi
 
+xattr -cr "$MOUNT_POINT/LanScope Mac.app"
+codesign --verify --deep --strict --verbose=2 "$MOUNT_POINT/LanScope Mac.app"
+
 sync
 echo "detaching DMG..."
 hdiutil detach "$MOUNT_POINT" >/dev/null || hdiutil detach "$MOUNT_POINT" -force >/dev/null
