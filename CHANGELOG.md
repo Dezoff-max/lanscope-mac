@@ -6,7 +6,10 @@ The project uses semantic versioning while it is in MVP development.
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Changed
+
+- Updated GitHub Actions checkout to `actions/checkout@v6`.
+- Added a total release downloads badge to the README.
 
 ## [0.1.1] - 2026-06-08
 
