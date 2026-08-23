@@ -28,7 +28,7 @@ struct FavoritesView: View {
                 ContentUnavailableView(
                     "No Favorites",
                     systemImage: "star",
-                    description: Text("Add devices from scan results or sample data.")
+                    description: Text("Add devices from scan results.")
                 )
             } else {
                 DeviceTableView(devices: filteredFavorites, selection: $appState.selectedDeviceIDs)

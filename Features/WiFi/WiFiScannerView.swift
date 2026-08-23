@@ -42,7 +42,6 @@ struct WiFiScannerView: View {
             if sortedNetworks.isEmpty {
                 RadarEmptyStateView(
                     isScanning: appState.isWiFiScanning,
-                    isMockMode: false,
                     idleTitle: "No Wi-Fi Networks",
                     scanningTitle: "Scanning Wi-Fi",
                     idleSystemImage: "wifi",

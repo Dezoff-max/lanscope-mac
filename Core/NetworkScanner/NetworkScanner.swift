@@ -36,10 +36,6 @@ final class NetworkScanner {
         config: ScannerConfig,
         onEvent: @MainActor @escaping (ScanProgressEvent) -> Void
     ) async throws -> [Device] {
-        if config.mockMode {
-            return try await mockScan(onEvent: onEvent)
-        }
-
         let hosts = try IPRangeParser.hosts(in: config.ipRange)
         let total = hosts.count
         await onEvent(.started(total: total))
@@ -85,7 +81,8 @@ final class NetworkScanner {
             }
         }
 
-        let sortedResults = results.sorted { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
+        let sortedResults = enrichWithARPSnapshot(results, scannedHosts: hosts, config: config)
+            .sorted { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
         await onEvent(.completed(sortedResults, total: total))
         return sortedResults
     }
@@ -96,28 +93,43 @@ final class NetworkScanner {
 
         let openPorts = await openPortsResult
         let isReachableByPing = await pingResult
-        // macOS exposes peer MAC addresses through the normal ARP cache without root.
-        // If the cache has no entry, MVP safely falls back to Unknown instead of using privileged raw sockets.
-        let macAddress = arpResolver.macAddress(for: ipAddress)
-
-        guard isReachableByPing || !openPorts.isEmpty || macAddress != nil else {
+        guard isReachableByPing || !openPorts.isEmpty else {
             return nil
         }
 
         let services = openPorts.map { ServiceCatalog.service(for: $0) }
         let hostname = await hostnameResolver.hostname(for: ipAddress) ?? ""
-        let vendor = config.vendorLookupEnabled ? vendorLookup.vendor(for: macAddress) : "Unknown"
 
         return Device(
             ipAddress: ipAddress,
             hostname: hostname,
-            macAddress: macAddress,
-            vendor: vendor,
+            macAddress: nil,
+            vendor: "Unknown",
             status: .online,
             openPorts: openPorts,
             services: services,
             lastSeen: Date()
         )
+    }
+
+    private func enrichWithARPSnapshot(
+        _ devices: [Device],
+        scannedHosts: [String],
+        config: ScannerConfig
+    ) -> [Device] {
+        let scannedHostSet = Set(scannedHosts)
+        let arpEntries = arpResolver.resolvedIPv4Entries()
+        var devicesByIP = Dictionary(uniqueKeysWithValues: devices.map { ($0.ipAddress, $0) })
+
+        for (ipAddress, macAddress) in arpEntries where scannedHostSet.contains(ipAddress) {
+            var device = devicesByIP[ipAddress] ?? Device(ipAddress: ipAddress)
+            device.macAddress = macAddress
+            device.vendor = config.vendorLookupEnabled ? vendorLookup.vendor(for: macAddress) : "Unknown"
+            device.lastSeen = Date()
+            devicesByIP[ipAddress] = device
+        }
+
+        return Array(devicesByIP.values)
     }
 
     private func scanPorts(ipAddress: String, ports: [Int], timeout: TimeInterval) async -> [Int] {
@@ -139,24 +151,5 @@ final class NetworkScanner {
             }
             return openPorts.sorted()
         }
-    }
-
-    private func mockScan(onEvent: @MainActor @escaping (ScanProgressEvent) -> Void) async throws -> [Device] {
-        let sampleDevices = MockDevices.sample
-        let total = 24
-        await onEvent(.started(total: total))
-
-        for index in 1...total {
-            try Task.checkCancellation()
-            try await Task.sleep(nanoseconds: 80_000_000)
-            if index <= sampleDevices.count {
-                await onEvent(.deviceFound(sampleDevices[index - 1], completed: index, total: total))
-            } else {
-                await onEvent(.hostFinished(completed: index, total: total))
-            }
-        }
-
-        await onEvent(.completed(sampleDevices, total: total))
-        return sampleDevices
     }
 }

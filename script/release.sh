@@ -43,7 +43,6 @@ cd "$SCRIPT_DIR/.."
 ROOT_DIR="$PWD"
 DMG_PATH="$ROOT_DIR/dist/LanScope Mac.dmg"
 SHA_PATH="$ROOT_DIR/dist/LanScope Mac.dmg.sha256"
-PREVIEW_PATH="$ROOT_DIR/docs/preview/lanscope-mac-preview.png"
 NOTES_PATH="$ROOT_DIR/dist/release-notes-$TAG.md"
 
 DIRTY_FILES="$(git status --porcelain | awk '{print $2}' | sort -u)"
@@ -123,7 +122,6 @@ echo "creating GitHub Release..."
 gh release create "$TAG" \
   "$DMG_PATH#LanScope.Mac.dmg" \
   "$SHA_PATH#LanScope.Mac.dmg.sha256" \
-  "$PREVIEW_PATH#lanscope-mac-preview.png" \
   --title "LanScope Mac $TAG" \
   --notes-file "$NOTES_PATH"
 

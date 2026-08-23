@@ -33,4 +33,4 @@ That request does not include discovered IP addresses, MAC addresses, hostnames,
 
 ## Permissions
 
-The MVP does not require root access. MAC lookup uses the local macOS ARP cache through `/usr/sbin/arp`. If a MAC address is not present in the ARP cache, the app shows `Unknown`.
+The MVP does not require root access. On macOS 15 and later, the system asks for Local Network access before scanning. MAC lookup reads the local macOS routing table directly. If a MAC address is not present in the ARP cache, the app shows `Unknown`.

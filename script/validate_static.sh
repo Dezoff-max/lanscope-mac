@@ -50,6 +50,14 @@ test -f Resources/DMGBackground.png || {
   echo "missing DMG background: Resources/DMGBackground.png" >&2
   exit 1
 }
+test ! -e Utilities/MockDevices.swift || {
+  echo "removed demo device source is still present: Utilities/MockDevices.swift" >&2
+  exit 1
+}
+grep -q '<key>NSLocalNetworkUsageDescription</key>' script/build_and_run.sh || {
+  echo "missing local network privacy usage description" >&2
+  exit 1
+}
 
 ds_store_file="$(find App Features Core Models Persistence Utilities Resources Tests script -name .DS_Store -print -quit)"
 if [[ -n "$ds_store_file" ]]; then

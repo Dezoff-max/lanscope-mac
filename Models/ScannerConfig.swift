@@ -9,7 +9,6 @@ struct ScannerConfig: Codable, Equatable {
     var timeout: TimeInterval
     var concurrencyLimit: Int
     var vendorLookupEnabled: Bool
-    var mockMode: Bool
     var theme: AppTheme
 
     static var `default`: ScannerConfig {
@@ -19,7 +18,6 @@ struct ScannerConfig: Codable, Equatable {
             timeout: 0.8,
             concurrencyLimit: 64,
             vendorLookupEnabled: true,
-            mockMode: false,
             theme: .system
         )
     }

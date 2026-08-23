@@ -24,8 +24,6 @@ struct SettingsView: View {
 
             Section("Lookup") {
                 Toggle("Vendor lookup", isOn: $config.vendorLookupEnabled)
-                Toggle("Sample data", isOn: $config.mockMode)
-                    .help("Shows sample devices without scanning the network.")
                 HStack {
                     Text("Vendor records")
                     Spacer()

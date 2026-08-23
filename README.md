@@ -1,7 +1,5 @@
 # LanScope Mac
 
-![LanScope Mac preview](docs/preview/lanscope-mac-preview.png)
-
 [![CI](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml/badge.svg)](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml)
 [![Latest Release](https://img.shields.io/github/v/release/Dezoff-max/lanscope-mac?sort=semver)](https://github.com/Dezoff-max/lanscope-mac/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Dezoff-max/lanscope-mac/total?label=downloads)](https://github.com/Dezoff-max/lanscope-mac/releases/latest)
@@ -25,8 +23,6 @@ Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 
 ![Scan empty state](docs/screenshots/scan-empty.png)
 
-![Scan results](docs/screenshots/scan-results.png)
-
 ![Settings](docs/screenshots/settings.png)
 
 ## MVP Features
@@ -37,13 +33,12 @@ Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 - Ping-based discovery and TCP port scanning for common services: SSH, HTTP, HTTPS, SMB, AFP, VNC, RDP, and HTTP-alt.
 - Wi-Fi scanner for nearby networks with SSID, BSSID, signal, noise, channel, band, width, security, and PHY mode.
 - Configurable timeout and parallel scan limit.
-- ARP cache lookup through `/usr/sbin/arp` without root access.
+- ARP cache lookup through the Darwin routing table without root access or child processes.
 - Local IEEE OUI database in `Resources/oui.json` with 39k+ vendor records.
 - OUI database updates from Settings or with `script/update_oui_database.rb`.
 - Favorites and scan history stored locally with UserDefaults.
 - CSV / JSON export and selected-row clipboard copy.
 - Quick actions: Browser, SSH through Terminal, SMB, VNC, Copy IP, Copy MAC, Favorite, and Wake-on-LAN.
-- Sample data mode in Settings for testing the UI without scanning a real network.
 - App icon, DMG volume icon, Finder layout, and custom DMG file icon from `Resources/AppIcon.icns`.
 
 ## Installation
@@ -142,7 +137,7 @@ The release script updates app metadata, runs validation and tests, builds the a
 - `Features/Devices` - table, sidebar, and detail panel.
 - `Features/Favorites` - favorite devices.
 - `Features/History` - scan history.
-- `Features/Settings` - scanner, lookup, sample data, and theme settings.
+- `Features/Settings` - scanner, lookup, local-network, and theme settings.
 - `Core/NetworkScanner` - async scanner, TCP probes, service catalog.
 - `Core/WiFiScanner` - CoreWLAN Wi-Fi scan integration and Location Services permission bridge.
 - `Core/ARP` - macOS ARP cache reader.
@@ -157,6 +152,7 @@ The release script updates app metadata, runs validation and tests, builds the a
 
 - ICMP discovery uses system `/sbin/ping`; the app does not use raw sockets and does not require root access.
 - TCP port scanning is implemented with Network.framework.
+- macOS 15+ asks for Local Network access before the app can scan nearby devices.
 - Wi-Fi scanning uses public CoreWLAN APIs and does not require root access. macOS may require Location Services permission before SSID and BSSID are visible.
 - MAC addresses are available only when macOS has the device in the ARP cache.
 - Vendor lookup depends on the local OUI database. Randomized or locally administered MAC addresses are shown as `Locally Administered`, and missing OUIs are shown as `Unknown`.

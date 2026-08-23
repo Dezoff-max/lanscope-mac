@@ -30,8 +30,7 @@ struct ScanView: View {
 
             if filteredDevices.isEmpty {
                 RadarEmptyStateView(
-                    isScanning: appState.isScanning,
-                    isMockMode: appState.config.mockMode
+                    isScanning: appState.isScanning
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             } else {

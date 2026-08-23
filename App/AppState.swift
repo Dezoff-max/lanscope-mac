@@ -66,6 +66,7 @@ final class AppState: ObservableObject {
         self.favorites = persistence.loadFavorites()
         self.history = persistence.loadHistory()
         self.vendorDatabaseCount = scanner.vendorDatabaseCount
+        persistence.saveConfig(self.config)
     }
 
     var currentSection: SidebarSection {
@@ -130,7 +131,7 @@ final class AppState: ObservableObject {
         selectedDeviceIDs = []
         progress = 0
         isScanning = true
-        statusMessage = scanConfig.mockMode ? "Running sample scan..." : "Scanning \(scanConfig.ipRange)..."
+        statusMessage = "Scanning \(scanConfig.ipRange)..."
 
         scanTask = Task { [weak self] in
             guard let self else {
@@ -413,9 +414,10 @@ final class AppState: ObservableObject {
                 return updated
             }
             currentScanDevices = favoriteAwareDevices.sorted { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
-            for device in currentScanDevices where !hasVisibleOrPendingDevice(ipAddress: device.ipAddress) {
-                queueAnimatedDevice(device)
+            for device in currentScanDevices {
+                mergeCompletedDevice(device)
             }
+            devices.sort { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
             progress = 1
             statusMessage = "Found \(currentScanDevices.count) device(s)"
         }
@@ -465,6 +467,20 @@ final class AppState: ObservableObject {
     private func hasVisibleOrPendingDevice(ipAddress: String) -> Bool {
         devices.contains { $0.ipAddress == ipAddress }
             || pendingAnimatedDevices.contains { $0.ipAddress == ipAddress }
+    }
+
+    private func mergeCompletedDevice(_ device: Device) {
+        if let visibleIndex = devices.firstIndex(where: { $0.ipAddress == device.ipAddress }) {
+            devices[visibleIndex] = device
+            return
+        }
+
+        if let pendingIndex = pendingAnimatedDevices.firstIndex(where: { $0.ipAddress == device.ipAddress }) {
+            pendingAnimatedDevices[pendingIndex] = device
+            return
+        }
+
+        queueAnimatedDevice(device)
     }
 
     private func startAnimatedInsertionIfNeeded() {

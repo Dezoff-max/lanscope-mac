@@ -2,7 +2,6 @@ import SwiftUI
 
 struct RadarEmptyStateView: View {
     let isScanning: Bool
-    let isMockMode: Bool
     let idleTitle: String
     let scanningTitle: String
     let idleSystemImage: String
@@ -14,7 +13,6 @@ struct RadarEmptyStateView: View {
 
     init(
         isScanning: Bool,
-        isMockMode: Bool,
         idleTitle: String = "No Devices",
         scanningTitle: String = "Scanning Network",
         idleSystemImage: String = "point.3.connected.trianglepath.dotted",
@@ -23,7 +21,6 @@ struct RadarEmptyStateView: View {
         scanningMessage: String? = nil
     ) {
         self.isScanning = isScanning
-        self.isMockMode = isMockMode
         self.idleTitle = idleTitle
         self.scanningTitle = scanningTitle
         self.idleSystemImage = idleSystemImage
@@ -66,12 +63,12 @@ struct RadarEmptyStateView: View {
             if let scanningMessage {
                 return scanningMessage
             }
-            return isMockMode ? "Sample devices are arriving." : "Waiting for local hosts and open services."
+            return "Waiting for local hosts and open services."
         }
         if let idleMessage {
             return idleMessage
         }
-        return "Run a scan or enable sample data in Settings."
+        return "Run a scan to discover devices on the local network."
     }
 }
 

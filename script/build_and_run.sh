@@ -69,6 +69,8 @@ cat >"$INFO_PLIST" <<PLIST
   <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
   <key>NSLocationWhenInUseUsageDescription</key>
   <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>LanScope Mac scans the local IP ranges you choose to discover devices and services.</string>
   <key>LSMinimumSystemVersion</key>
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key>

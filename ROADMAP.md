@@ -8,7 +8,6 @@
 - ARP cache MAC lookup.
 - Full local IEEE OUI database and update flow from Settings.
 - Favorites, history, CSV export, and JSON export.
-- Sample data mode.
 - Compact macOS split layout.
 - App icon, DMG icon, DMG Finder layout, and installation instructions.
 
