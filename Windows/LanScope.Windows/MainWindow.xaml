@@ -1,0 +1,335 @@
+<Window x:Class="LanScope.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:LanScope.Windows.Controls"
+        Title="LanScope Windows" Width="1220" Height="780"
+        MinWidth="980" MinHeight="620" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="NavRadio" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="Margin" Value="8,2" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="NavBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background" Value="#243047" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background" Value="#2563EB" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="MinWidth" Value="78" />
+            <Setter Property="Height" Value="34" />
+        </Style>
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,7" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="174" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="78" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="70" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="16,18,10,12">
+                    <Border Width="40" Height="40" CornerRadius="12" Background="#2563EB">
+                        <TextBlock Text="LS" Foreground="White" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="10,2,0,0">
+                        <TextBlock Text="LanScope" Foreground="White" FontWeight="SemiBold" FontSize="16" />
+                        <TextBlock Text="Windows" Foreground="#93A4BD" FontSize="11" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                    <RadioButton x:Name="ScanNav" Style="{StaticResource NavRadio}" Tag="Scan" IsChecked="True" Click="Navigation_Click" Content="◉   Scan" />
+                    <RadioButton Style="{StaticResource NavRadio}" Tag="Wifi" Click="Navigation_Click" Content="≋   Wi-Fi" />
+                    <RadioButton Style="{StaticResource NavRadio}" Tag="Favorites" Click="Navigation_Click" Content="★   Favorites" />
+                    <RadioButton Style="{StaticResource NavRadio}" Tag="History" Click="Navigation_Click" Content="◷   History" />
+                    <RadioButton Style="{StaticResource NavRadio}" Tag="Settings" Click="Navigation_Click" Content="⚙   Settings" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Margin="18,8,12,12">
+                    <TextBlock Text="Local-first scanner" Foreground="#93A4BD" FontSize="11" />
+                    <TextBlock Text="v0.1.0" Foreground="#64748B" FontSize="10" Margin="0,3,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="62" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <Grid Margin="18,0,16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding SectionTitle}" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Height="34" Margin="0,0,9,0" ToolTip="Search current results" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource PrimaryButton}" Command="{Binding PrimaryScanCommand}" IsEnabled="{Binding CanStartScan, Mode=OneWay}" MinWidth="108" Height="34" Content="{Binding PrimaryActionLabel}" />
+                        <Button Style="{StaticResource ToolbarButton}" Command="{Binding StopScanCommand}" Content="Stop" />
+                        <Button Style="{StaticResource ToolbarButton}" IsEnabled="{Binding CanExport}" Click="ExportCsv_Click" Content="Export" />
+                        <Button Style="{StaticResource ToolbarButton}" IsEnabled="{Binding CanExport}" Click="CopyRows_Click" Content="Copy" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <!-- Device sections: scan, favorites, and history -->
+                <Grid Visibility="{Binding IsDeviceSection, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="28" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <Grid Margin="14,10">
+                            <Grid Visibility="{Binding IsScanSection, Converter={StaticResource BoolToVisibility}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="250" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding IpRange, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Command="{Binding DetectRangeCommand}" Margin="8,0" Content="Detect range" />
+                                <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                    <ProgressBar Height="7" Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
+                                    <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Visibility="{Binding IsFavoritesSection, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="Saved devices stay available between scans." Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Grid Visibility="{Binding IsHistorySection, Converter={StaticResource BoolToVisibility}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="320" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Scan:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedHistory}" DisplayMemberPath="Summary" />
+                                <TextBlock Grid.Column="2" Text="{Binding SelectedHistory.IpRange}" FontFamily="Consolas" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                <Button Grid.Column="3" Command="{Binding ClearHistoryCommand}" Content="Clear history" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="300" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <DataGrid ItemsSource="{Binding DisplayedDevices}" SelectedItem="{Binding SelectedDevice, Mode=TwoWay}" Margin="14">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Status" Width="76">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="●" Foreground="{DynamicResource SuccessBrush}" Margin="0,0,5,0" />
+                                                    <TextBlock Text="{Binding StatusDisplay}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Name" Width="1.6*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding FavoriteGlyph}" Foreground="#F59E0B" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding IpAddress}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="Consolas" FontSize="11" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="MAC" Binding="{Binding MacAddress, TargetNullValue=-}" Width="135" FontFamily="Consolas" />
+                                    <DataGridTextColumn Header="Vendor" Binding="{Binding Vendor}" Width="1.5*" />
+                                    <DataGridTextColumn Header="Ports" Binding="{Binding OpenPortsDisplay}" Width="92" FontFamily="Consolas" />
+                                    <DataGridTextColumn Header="Services" Binding="{Binding ServicesDisplay}" Width="110" />
+                                    <DataGridTextColumn Header="Seen" Binding="{Binding LastSeen, StringFormat=t}" Width="72" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Border Margin="14" Background="{DynamicResource PanelBrush}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasDisplayedDevices}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <controls:RadarScanView IsScanning="{Binding IsScanning, Mode=OneWay}" />
+                            </Border>
+                        </Grid>
+
+                        <Border Grid.Column="1" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
+                            <Grid>
+                                <StackPanel Margin="20" Visibility="{Binding HasSelectedDevice, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding SelectedDevice.FavoriteGlyph}" Foreground="#F59E0B" FontSize="28" />
+                                    <TextBlock Text="{Binding SelectedDevice.DisplayName}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                    <TextBlock Text="{Binding SelectedDevice.IpAddress}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="Consolas" Margin="0,3,0,18" />
+
+                                    <GroupBox Header="Details">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
+                                            <TextBlock Text="Hostname" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.Hostname, TargetNullValue=-}" TextTrimming="CharacterEllipsis" Margin="0,3" />
+                                            <TextBlock Grid.Row="1" Text="MAC" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDevice.MacAddress, TargetNullValue=-}" FontFamily="Consolas" Margin="0,3" />
+                                            <TextBlock Grid.Row="2" Text="Vendor" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDevice.Vendor}" TextWrapping="Wrap" Margin="0,3" />
+                                            <TextBlock Grid.Row="3" Text="Seen" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDevice.LastSeen, StringFormat=g}" Margin="0,3" />
+                                        </Grid>
+                                    </GroupBox>
+
+                                    <GroupBox Header="Services">
+                                        <TextBlock Text="{Binding SelectedDevice.ServicesDisplay}" TextWrapping="Wrap" />
+                                    </GroupBox>
+
+                                    <GroupBox Header="Actions">
+                                        <UniformGrid Columns="2">
+                                            <Button Command="{Binding OpenBrowserCommand}" Content="Browser" />
+                                            <Button Command="{Binding OpenSshCommand}" Content="SSH" />
+                                            <Button Command="{Binding OpenSmbCommand}" Content="SMB" />
+                                            <Button Command="{Binding OpenRdpCommand}" Content="RDP" />
+                                            <Button Command="{Binding CopyIpCommand}" Content="Copy IP" />
+                                            <Button Command="{Binding CopyMacCommand}" Content="Copy MAC" />
+                                            <Button Command="{Binding ToggleFavoriteCommand}" Content="Favorite" />
+                                            <Button Command="{Binding WakeCommand}" Content="Wake" />
+                                        </UniformGrid>
+                                    </GroupBox>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers><DataTrigger Binding="{Binding HasSelectedDevice}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <TextBlock Text="▤" FontSize="30" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Select a device" Foreground="{DynamicResource MutedTextBrush}" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <TextBlock Grid.Row="2" Text="{Binding DeviceCountLabel}" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" Margin="0,5,16,0" FontSize="11" />
+                </Grid>
+
+                <!-- Wi-Fi -->
+                <Grid Visibility="{Binding IsWifiSection, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.RowDefinitions><RowDefinition Height="58" /><RowDefinition Height="*" /><RowDefinition Height="28" /></Grid.RowDefinitions>
+                    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <Grid Margin="16,10"><TextBlock Text="{Binding WifiStatusMessage}" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}" /><ProgressBar HorizontalAlignment="Right" Width="180" Height="7" IsIndeterminate="{Binding IsWifiScanning}" /></Grid>
+                    </Border>
+                    <Grid Grid.Row="1">
+                        <DataGrid ItemsSource="{Binding DisplayedWifiNetworks}" Margin="14">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Signal" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding SignalDisplay}" FontFamily="Consolas" FontWeight="SemiBold" /><TextBlock Text="{Binding SignalQuality}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                <DataGridTextColumn Header="SSID" Binding="{Binding DisplaySsid}" Width="2*" />
+                                <DataGridTextColumn Header="BSSID" Binding="{Binding Bssid}" Width="150" FontFamily="Consolas" />
+                                <DataGridTextColumn Header="Security" Binding="{Binding Security}" Width="1.5*" />
+                                <DataGridTextColumn Header="Channel" Binding="{Binding ChannelDisplay}" Width="75" />
+                                <DataGridTextColumn Header="Band" Binding="{Binding Band}" Width="90" />
+                                <DataGridTextColumn Header="Radio" Binding="{Binding RadioType}" Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Visible" /><Style.Triggers><DataTrigger Binding="{Binding HasWifiNetworks}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+                            <TextBlock Text="≋" Foreground="{DynamicResource AccentBrush}" FontSize="42" HorizontalAlignment="Center" />
+                            <TextBlock Text="No Wi-Fi Networks" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0" />
+                            <TextBlock Text="Run a Wi-Fi scan to list nearby access points." Foreground="{DynamicResource MutedTextBrush}" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Grid.Row="2" Text="{Binding WifiCountLabel}" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" Margin="0,5,16,0" FontSize="11" />
+                </Grid>
+
+                <!-- Settings -->
+                <ScrollViewer Visibility="{Binding IsSettingsSection, Converter={StaticResource BoolToVisibility}}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Width="640" HorizontalAlignment="Left" Margin="28,24">
+                        <TextBlock Text="Scanner" Style="{StaticResource SectionLabel}" />
+                        <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,22">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <TextBlock Text="Default range" VerticalAlignment="Center" Margin="0,6" />
+                                <TextBox Grid.Column="1" Text="{Binding IpRange, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas" Margin="0,4" />
+                                <TextBlock Grid.Row="1" Text="Ports" VerticalAlignment="Center" Margin="0,6" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PortsText, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas" Margin="0,4" />
+                                <TextBlock Grid.Row="2" Text="Timeout (seconds)" VerticalAlignment="Center" Margin="0,6" />
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TimeoutSeconds, UpdateSourceTrigger=LostFocus}" Margin="0,4" />
+                                <TextBlock Grid.Row="3" Text="Parallel limit" VerticalAlignment="Center" Margin="0,6" />
+                                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ConcurrencyLimit, UpdateSourceTrigger=LostFocus}" Margin="0,4" />
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="Lookup" Style="{StaticResource SectionLabel}" />
+                        <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,22">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
+                                <TextBlock Text="Vendor lookup" VerticalAlignment="Center" Margin="0,6" />
+                                <CheckBox Grid.Column="1" IsChecked="{Binding VendorLookupEnabled}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Row="1" Text="Vendor records" VerticalAlignment="Center" Margin="0,6" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding VendorDatabaseCount, StringFormat=N0}" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Row="2" Grid.ColumnSpan="2" Command="{Binding UpdateOuiCommand}" HorizontalAlignment="Left" Content="Update OUI from IEEE" Margin="0,8,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="Appearance" Style="{StaticResource SectionLabel}" />
+                        <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,22">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions><TextBlock Text="Theme" VerticalAlignment="Center" /><ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}" /></Grid>
+                        </Border>
+
+                        <TextBlock Text="Local Network" Style="{StaticResource SectionLabel}" />
+                        <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="{Binding IpRange}" FontFamily="Consolas" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}" /><Button Grid.Column="1" Command="{Binding DetectRangeCommand}" Content="Detect range" /></Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
