@@ -1,0 +1,154 @@
+<UserControl x:Class="LanScope.Windows.Controls.RadarScanView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             IsHitTestVisible="False">
+    <UserControl.Resources>
+        <Storyboard x:Key="IdleSweepAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="IdleSweepTransform"
+                             Storyboard.TargetProperty="X"
+                             From="-140" To="960" Duration="0:0:6.8" />
+        </Storyboard>
+        <Storyboard x:Key="ScanSweepAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="ScanSweepTransform"
+                             Storyboard.TargetProperty="X"
+                             From="-140" To="960" Duration="0:0:3.4" />
+        </Storyboard>
+        <Storyboard x:Key="PacketAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="PacketOneTransform" Storyboard.TargetProperty="X" From="-80" To="950" Duration="0:0:4.8" />
+            <DoubleAnimation Storyboard.TargetName="PacketTwoTransform" Storyboard.TargetProperty="X" From="950" To="-80" Duration="0:0:6.1" />
+            <DoubleAnimation Storyboard.TargetName="PacketThreeTransform" Storyboard.TargetProperty="X" From="-120" To="940" BeginTime="0:0:1.2" Duration="0:0:5.4" />
+            <DoubleAnimation Storyboard.TargetName="PacketFourTransform" Storyboard.TargetProperty="X" From="940" To="-100" BeginTime="0:0:2.0" Duration="0:0:5.8" />
+        </Storyboard>
+        <Storyboard x:Key="PulseAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="PulseScale" Storyboard.TargetProperty="ScaleX" From="0.8" To="1.55" Duration="0:0:1.35" />
+            <DoubleAnimation Storyboard.TargetName="PulseScale" Storyboard.TargetProperty="ScaleY" From="0.8" To="1.55" Duration="0:0:1.35" />
+            <DoubleAnimation Storyboard.TargetName="PulseRing" Storyboard.TargetProperty="Opacity" From="0.58" To="0" Duration="0:0:1.35" />
+            <DoubleAnimation Storyboard.TargetName="NodeA" Storyboard.TargetProperty="Opacity" From="0.55" To="1" AutoReverse="True" Duration="0:0:1.7" />
+            <DoubleAnimation Storyboard.TargetName="NodeB" Storyboard.TargetProperty="Opacity" From="0.5" To="1" AutoReverse="True" BeginTime="0:0:0.45" Duration="0:0:1.7" />
+            <DoubleAnimation Storyboard.TargetName="NodeC" Storyboard.TargetProperty="Opacity" From="0.5" To="1" AutoReverse="True" BeginTime="0:0:0.9" Duration="0:0:1.7" />
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Grid ClipToBounds="True">
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard Storyboard="{StaticResource IdleSweepAnimation}" />
+                <BeginStoryboard Storyboard="{StaticResource ScanSweepAnimation}" />
+                <BeginStoryboard Storyboard="{StaticResource PacketAnimation}" />
+                <BeginStoryboard Storyboard="{StaticResource PulseAnimation}" />
+            </EventTrigger>
+        </Grid.Triggers>
+
+        <Viewbox Stretch="Fill" Opacity="0.88">
+            <Grid Width="900" Height="480">
+                <Grid.RowDefinitions>
+                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="1" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="2" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="3" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="4" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="5" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="6" BorderBrush="#293B82F6" BorderThickness="0,1,0,0" />
+
+                <Canvas Grid.RowSpan="7" ClipToBounds="True">
+                    <Line X1="100" X2="100" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="200" X2="200" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="300" X2="300" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="400" X2="400" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="500" X2="500" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="600" X2="600" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="700" X2="700" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+                    <Line X1="800" X2="800" Y1="30" Y2="450" Stroke="#1F64748B" StrokeDashArray="4,10" />
+
+                    <Border x:Name="IdleSweep" Canvas.Top="15" Width="110" Height="450">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.RenderTransform><TranslateTransform x:Name="IdleSweepTransform" /></Border.RenderTransform>
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#0038BDF8" Offset="0" />
+                                <GradientStop Color="#1838BDF8" Offset="0.5" />
+                                <GradientStop Color="#0038BDF8" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <Border x:Name="ScanSweep" Canvas.Top="8" Width="120" Height="462">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.RenderTransform><TranslateTransform x:Name="ScanSweepTransform" /></Border.RenderTransform>
+                        <Grid>
+                            <Border>
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#0038BDF8" Offset="0" />
+                                        <GradientStop Color="#3438BDF8" Offset="0.5" />
+                                        <GradientStop Color="#0038BDF8" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Line X1="60" X2="60" Y1="0" Y2="462" Stroke="#A838BDF8" StrokeThickness="2" StrokeDashArray="8,7" />
+                        </Grid>
+                    </Border>
+
+                    <Border Canvas.Top="66" Width="34" Height="4" CornerRadius="2" Background="#B038BDF8"><Border.RenderTransform><TranslateTransform x:Name="PacketOneTransform" /></Border.RenderTransform></Border>
+                    <Border Canvas.Top="136" Width="22" Height="3" CornerRadius="2" Background="#795B8DEF"><Border.RenderTransform><TranslateTransform x:Name="PacketTwoTransform" /></Border.RenderTransform></Border>
+                    <Border Canvas.Top="342" Width="30" Height="4" CornerRadius="2" Background="#A038BDF8"><Border.RenderTransform><TranslateTransform x:Name="PacketThreeTransform" /></Border.RenderTransform></Border>
+                    <Border Canvas.Top="411" Width="20" Height="3" CornerRadius="2" Background="#705B8DEF"><Border.RenderTransform><TranslateTransform x:Name="PacketFourTransform" /></Border.RenderTransform></Border>
+
+                    <Border x:Name="NodeA" Canvas.Left="95" Canvas.Top="54" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#6B38BDF8" BorderThickness="1"><TextBlock Text="▣" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="240" Canvas.Top="124" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▤" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border x:Name="NodeB" Canvas.Left="365" Canvas.Top="54" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#6B38BDF8" BorderThickness="1"><TextBlock Text="▯" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="510" Canvas.Top="194" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▣" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="650" Canvas.Top="124" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="⌁" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border x:Name="NodeC" Canvas.Left="790" Canvas.Top="54" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#6B38BDF8" BorderThickness="1"><TextBlock Text="▣" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="150" Canvas.Top="264" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▯" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="320" Canvas.Top="334" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▣" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="470" Canvas.Top="404" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▤" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="620" Canvas.Top="334" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▣" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <Border Canvas.Left="770" Canvas.Top="264" Width="25" Height="25" CornerRadius="6" Background="{DynamicResource PanelBrush}" BorderBrush="#5564748B" BorderThickness="1"><TextBlock Text="▯" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                </Canvas>
+            </Grid>
+        </Viewbox>
+
+        <Ellipse x:Name="PulseRing" Width="104" Height="104" Stroke="#7638BDF8" StrokeThickness="2" RenderTransformOrigin="0.5,0.5">
+            <Ellipse.Style>
+                <Style TargetType="Ellipse"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style>
+            </Ellipse.Style>
+            <Ellipse.RenderTransform><ScaleTransform x:Name="PulseScale" /></Ellipse.RenderTransform>
+        </Ellipse>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" Padding="22,18" CornerRadius="10"
+                Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="⌁" Foreground="{DynamicResource AccentBrush}" FontSize="32" HorizontalAlignment="Center" />
+                <TextBlock FontWeight="SemiBold" FontSize="18" HorizontalAlignment="Center" Margin="0,8,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock"><Setter Property="Text" Value="No Devices" /><Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Text" Value="Scanning Network" /></DataTrigger></Style.Triggers></Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" Margin="0,7,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock"><Setter Property="Text" Value="Run a scan to discover devices on the local network." /><Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Text" Value="Waiting for local hosts and open services." /></DataTrigger></Style.Triggers></Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,11,0,0">
+                    <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsScanning, ElementName=Root}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+                    <Ellipse Width="6" Height="6" Fill="#38BDF8" Margin="3"><Ellipse.Triggers><EventTrigger RoutedEvent="Loaded"><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" AutoReverse="True" RepeatBehavior="Forever" Duration="0:0:0.45" /></Storyboard></BeginStoryboard></EventTrigger></Ellipse.Triggers></Ellipse>
+                    <Ellipse Width="6" Height="6" Fill="#38BDF8" Margin="3"><Ellipse.Triggers><EventTrigger RoutedEvent="Loaded"><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" AutoReverse="True" RepeatBehavior="Forever" BeginTime="0:0:0.15" Duration="0:0:0.45" /></Storyboard></BeginStoryboard></EventTrigger></Ellipse.Triggers></Ellipse>
+                    <Ellipse Width="6" Height="6" Fill="#38BDF8" Margin="3"><Ellipse.Triggers><EventTrigger RoutedEvent="Loaded"><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" AutoReverse="True" RepeatBehavior="Forever" BeginTime="0:0:0.3" Duration="0:0:0.45" /></Storyboard></BeginStoryboard></EventTrigger></Ellipse.Triggers></Ellipse>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LanScope.Windows</RootNamespace>
+    <AssemblyName>LanScope.Windows</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\LanScope.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <Authors>Dezoff-max</Authors>
+    <Product>LanScope Windows</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LanScope.Core\LanScope.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\oui.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+</Project>
