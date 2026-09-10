@@ -24,7 +24,9 @@ struct FavoritesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if filteredFavorites.isEmpty {
+            if !searchText.isEmpty && filteredFavorites.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            } else if filteredFavorites.isEmpty {
                 ContentUnavailableView(
                     "No Favorites",
                     systemImage: "star",
@@ -45,7 +47,7 @@ struct FavoritesView: View {
                             .disabled(appState.selectedDevice == nil)
                         }
                         .padding(10)
-                        .background(.bar)
+                        .background { ChromeSurface() }
                     }
             }
         }

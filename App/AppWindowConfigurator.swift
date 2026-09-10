@@ -30,8 +30,7 @@ struct AppWindowConfigurator: NSViewRepresentable {
 
         let frame = window.frame
         let isTooSmall = frame.width < minimumSize.width || frame.height < minimumSize.height
-        let isTooWideFromPreviousLayout = frame.width > defaultSize.width + 80 || frame.height > defaultSize.height + 80
-        guard isTooSmall || isTooWideFromPreviousLayout else {
+        guard isTooSmall else {
             return
         }
 

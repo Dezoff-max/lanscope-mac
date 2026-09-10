@@ -2,90 +2,100 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showsInspector = false
+
+    private var hasDeviceTable: Bool {
+        [.scan, .favorites, .history].contains(appState.currentSection)
+    }
 
     var body: some View {
         NavigationSplitView {
             SidebarView(selection: $appState.selectedSection)
-                .navigationSplitViewColumnWidth(min: 122, ideal: 126, max: 136)
+                .navigationSplitViewColumnWidth(min: 140, ideal: 156, max: 200)
         } detail: {
-            contentWithOptionalDetail
-                .navigationTitle(appState.currentSection.title)
-                .navigationSplitViewColumnWidth(min: 940, ideal: 1036)
-        }
-        .animation(.snappy(duration: 0.22), value: appState.currentSection)
-        .animation(.snappy(duration: 0.2), value: appState.selectedDevice?.id)
-        .toolbar {
-            ToolbarItemGroup {
-                Button {
-                    if appState.currentSection == .wifi {
-                        appState.startWiFiScan()
-                    } else {
-                        appState.startScan()
-                    }
-                } label: {
-                    Label(appState.currentSection == .wifi ? "Scan Wi-Fi" : "Scan", systemImage: "play.fill")
-                }
-                .disabled(appState.currentSection == .wifi ? appState.isWiFiScanning : appState.isScanning)
-
-                Button {
-                    appState.stopScan()
-                } label: {
-                    Label("Stop", systemImage: "stop.fill")
-                }
-                .disabled(appState.currentSection == .wifi || !appState.isScanning)
-
-                Menu {
-                    Button("Export CSV") {
-                        appState.exportCSV()
-                    }
-                    Button("Export JSON") {
-                        appState.exportJSON()
-                    }
+            HStack(spacing: 0) {
+                mainContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(Color(nsColor: .textBackgroundColor))
+                if showsInspector {
                     Divider()
-                    Button("Copy Selected Rows") {
-                        appState.copySelectedRows()
-                    }
-                } label: {
-                    Label("Export", systemImage: "square.and.arrow.up")
+                    DeviceDetailView(device: appState.selectedDevice)
+                        .frame(width: 290)
+                        .transition(.opacity)
                 }
-                .disabled(appState.exportableSelection.isEmpty)
+            }
+            .navigationTitle(appState.currentSection.title)
+        }
+        .navigationSplitViewStyle(.balanced)
+        .onChange(of: appState.selectedDeviceIDs) { _, selection in
+            if hasDeviceTable {
+                withAnimation(InterfaceMotion.transition(reduceMotion: reduceMotion)) {
+                    showsInspector = selection.count == 1
+                }
             }
         }
-    }
+        .onChange(of: appState.currentSection) { _, _ in showsInspector = false }
+        .toolbar {
+            if appState.currentSection == .scan || appState.currentSection == .wifi {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        if appState.currentSection == .wifi {
+                            appState.startWiFiScan()
+                        } else {
+                            appState.startScan()
+                        }
+                    } label: {
+                        Label("Scan", systemImage: "play.fill")
+                    }
+                    .help(appState.currentSection == .wifi ? "Scan nearby Wi-Fi networks" : "Scan IP range")
+                    .disabled(appState.currentSection == .wifi ? appState.isWiFiScanning : appState.isScanning)
 
-    @ViewBuilder
-    private var contentWithOptionalDetail: some View {
-        HStack(spacing: 0) {
-            mainContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    if appState.currentSection == .scan {
+                        Button(action: appState.stopScan) {
+                            Label("Stop", systemImage: "stop.fill")
+                        }
+                        .help("Stop scan")
+                        .disabled(!appState.isScanning)
+                    }
+                }
+            }
 
-            if shouldShowDeviceDetail {
-                Divider()
-                DeviceDetailView(device: appState.selectedDevice)
-                    .frame(width: 272)
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+            if hasDeviceTable {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Menu {
+                        Button("Export CSV", action: appState.exportCSV)
+                        Button("Export JSON", action: appState.exportJSON)
+                        Divider()
+                        Button("Copy Selected Rows", action: appState.copySelectedRows)
+                    } label: {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    .help("Export devices")
+                    .disabled(appState.exportableSelection.isEmpty)
+
+                    Button {
+                        withAnimation(InterfaceMotion.transition(reduceMotion: reduceMotion)) {
+                            showsInspector.toggle()
+                        }
+                    } label: {
+                        Label("Inspector", systemImage: "sidebar.right")
+                    }
+                    .help(showsInspector ? "Hide inspector" : "Show inspector")
+                    .disabled(appState.selectedDeviceIDs.count != 1 && !showsInspector)
+                }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-
-    private var shouldShowDeviceDetail: Bool {
-        appState.selectedDevice != nil && appState.currentSection != .settings && appState.currentSection != .wifi
     }
 
     @ViewBuilder
     private var mainContent: some View {
         switch appState.currentSection {
-        case .scan:
-            ScanView()
-        case .wifi:
-            WiFiScannerView()
-        case .favorites:
-            FavoritesView()
-        case .history:
-            HistoryView()
-        case .settings:
-            SettingsView(config: $appState.config)
+        case .scan: ScanView()
+        case .wifi: WiFiScannerView()
+        case .favorites: FavoritesView()
+        case .history: HistoryView()
+        case .settings: SettingsView(config: $appState.config)
         }
     }
 }

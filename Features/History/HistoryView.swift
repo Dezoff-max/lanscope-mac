@@ -24,10 +24,11 @@ struct HistoryView: View {
                             Label("Clear", systemImage: "trash")
                         }
                         .buttonStyle(.bordered)
+                        .labelStyle(.iconOnly)
                         .help("Clear saved scan history.")
                     }
                     .padding(12)
-                    .background(.bar)
+                    .background { ChromeSurface() }
 
                     Divider()
 
@@ -97,6 +98,6 @@ struct HistoryView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(.bar)
+        .background { ChromeSurface() }
     }
 }

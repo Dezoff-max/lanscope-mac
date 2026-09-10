@@ -5,167 +5,93 @@ struct DeviceDetailView: View {
     let device: Device?
 
     var body: some View {
-        Group {
-            if let device {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        header(for: device)
-                        facts(for: device)
-                        services(for: device)
-                        actions(for: device)
+        if let device {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    header(device)
+                    Divider()
+                    InspectorSection(title: "Device") {
+                        fact("Hostname", device.hostname.isEmpty ? "Unavailable" : device.hostname)
+                        fact("IP Address", device.ipAddress)
+                        fact("MAC Address", device.macAddress ?? "Unavailable")
+                        fact("Manufacturer", device.vendor)
+                        fact("Last Seen", DateFormatter.lanScopeDateTime.string(from: device.lastSeen))
                     }
-                    .padding(16)
-                }
-                .background(.regularMaterial)
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
-            } else {
-                ContentUnavailableView(
-                    "No Selection",
-                    systemImage: "sidebar.right",
-                    description: Text("Select a device to see details.")
-                )
-                .transition(.opacity)
-            }
-        }
-        .animation(.snappy(duration: 0.24), value: device?.id)
-    }
-
-    private func header(for device: Device) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-                Image(systemName: device.isFavorite ? "star.fill" : "desktopcomputer")
-                    .font(.system(size: 30))
-                    .foregroundStyle(device.isFavorite ? Color.yellow : Color.accentColor)
-                    .frame(width: 40)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(device.displayName)
-                        .font(.title3.weight(.semibold))
-                        .lineLimit(2)
-                    Text(device.ipAddress)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-            }
-
-            Label(device.status.title, systemImage: "circle.fill")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(statusColor(for: device.status))
-        }
-    }
-
-    private func facts(for device: Device) -> some View {
-        GroupBox("Details") {
-            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 8) {
-                detailRow("Hostname", value: device.hostname.isEmpty ? "-" : device.hostname)
-                detailRow("MAC", value: device.macAddress ?? "-")
-                detailRow("Vendor", value: device.vendor)
-                detailRow("Last Seen", value: DateFormatter.lanScopeDateTime.string(from: device.lastSeen))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private func services(for device: Device) -> some View {
-        GroupBox("Services") {
-            if device.services.isEmpty {
-                Text("-")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(device.services) { service in
-                        HStack {
-                            Text(service.name)
-                                .fontWeight(.medium)
-                            Spacer()
-                            Text(":\(service.port)")
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(.secondary)
+                    Divider()
+                    InspectorSection(title: "Services") {
+                        if device.services.isEmpty {
+                            Text("No open services").foregroundStyle(.secondary)
+                        } else {
+                            ForEach(device.services) { service in
+                                HStack {
+                                    Text(service.name)
+                                    Spacer()
+                                    Text(String(service.port)).monospacedDigit().foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
+                    Divider()
+                    InspectorSection(title: "Connect") {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                            action("Browser", "safari", enabled: device.hasWebService) { appState.openBrowser(for: device) }
+                            action("SSH", "terminal", enabled: device.hasSSH) { appState.connectSSH(to: device) }
+                            action("SMB", "folder", enabled: device.hasSMB) { appState.openSMB(for: device) }
+                            action("VNC", "display", enabled: device.hasVNC) { appState.openVNC(for: device) }
+                        }
+                    }
+                    Divider()
+                    HStack(spacing: 12) {
+                        iconAction("Copy IP", "doc.on.doc") { appState.copyIP(device) }
+                        iconAction("Copy MAC", "number", enabled: device.macAddress != nil) { appState.copyMAC(device) }
+                        Spacer()
+                        iconAction(device.isFavorite ? "Remove Favorite" : "Add Favorite",
+                                   device.isFavorite ? "star.fill" : "star") { appState.toggleFavorite(device) }
+                        iconAction("Wake-on-LAN", "power", enabled: device.macAddress != nil) { appState.wakeOnLAN(device) }
+                    }
                 }
+                .padding(20)
             }
+        } else {
+            ContentUnavailableView("No Selection", systemImage: "sidebar.right")
         }
     }
 
-    private func actions(for device: Device) -> some View {
-        GroupBox("Actions") {
-            Grid(horizontalSpacing: 8, verticalSpacing: 8) {
-                GridRow {
-                    actionButton("Browser", symbol: "safari", disabled: !device.hasWebService) {
-                        appState.openBrowser(for: device)
-                    }
-                    actionButton("SSH", symbol: "terminal", disabled: !device.hasSSH) {
-                        appState.connectSSH(to: device)
-                    }
-                }
-
-                GridRow {
-                    actionButton("SMB", symbol: "folder", disabled: !device.hasSMB) {
-                        appState.openSMB(for: device)
-                    }
-                    actionButton("VNC", symbol: "display", disabled: !device.hasVNC) {
-                        appState.openVNC(for: device)
-                    }
-                }
-
-                GridRow {
-                    actionButton("Copy IP", symbol: "doc.on.doc") {
-                        appState.copyIP(device)
-                    }
-                    actionButton("Copy MAC", symbol: "number", disabled: device.macAddress == nil) {
-                        appState.copyMAC(device)
-                    }
-                }
-
-                GridRow {
-                    actionButton(device.isFavorite ? "Unfavorite" : "Favorite", symbol: device.isFavorite ? "star.slash" : "star") {
-                        appState.toggleFavorite(device)
-                    }
-                    actionButton("Wake", symbol: "power", disabled: device.macAddress == nil) {
-                        appState.wakeOnLAN(device)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
+    private func header(_ device: Device) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: "desktopcomputer")
+                .font(.system(size: 32, weight: .regular))
+                .foregroundStyle(Color.accentColor)
+            Text(device.displayName).font(.title3.weight(.semibold)).textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+            Label(device.status.title, systemImage: device.status == .online ? "checkmark.circle.fill" : "circle")
+                .font(.callout)
+                .foregroundStyle(device.status == .online ? Color.green : Color.secondary)
         }
     }
 
-    private func detailRow(_ title: String, value: String) -> some View {
-        GridRow {
-            Text(title)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .textSelection(.enabled)
-                .lineLimit(2)
+    private func fact(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(value).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private func actionButton(
-        _ title: String,
-        symbol: String,
-        disabled: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: symbol)
-                .frame(maxWidth: .infinity)
+    private func action(_ title: String, _ symbol: String, enabled: Bool, run: @escaping () -> Void) -> some View {
+        Button(action: run) {
+            Label(title, systemImage: symbol).frame(maxWidth: .infinity, minHeight: 22)
         }
         .buttonStyle(.bordered)
-        .disabled(disabled)
+        .disabled(!enabled)
+        .help(title)
     }
 
-    private func statusColor(for status: DeviceStatus) -> Color {
-        switch status {
-        case .online:
-            return .green
-        case .offline:
-            return .red
-        case .unknown:
-            return .orange
-        }
+    private func iconAction(_ title: String, _ symbol: String, enabled: Bool = true, run: @escaping () -> Void) -> some View {
+        Button(action: run) { Label(title, systemImage: symbol) }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.borderless)
+            .frame(width: 24, height: 28)
+            .disabled(!enabled)
+            .help(title)
     }
 }

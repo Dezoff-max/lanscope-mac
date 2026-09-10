@@ -8,6 +8,24 @@ The project uses semantic versioning while it is in MVP development.
 
 No unreleased changes yet.
 
+## [0.2.0] - 2026-09-10
+
+### Changed
+
+- Refreshed the native macOS interface with SF Symbols, consistent typography, contextual toolbar actions, and a compact, collapsible device inspector.
+- Unified LAN and Wi-Fi scanning feedback with a bottom status bar and a small network activity illustration that animates only during active scanning.
+- Replaced delayed result queues with immediate data updates and subtle, interruptible row appearance animations.
+- Added reduced-motion, reduced-transparency, and increased-contrast handling to shared interface components.
+- Improved light/dark appearance, empty search states, settings alignment, and support for smaller windows without resetting larger saved window sizes.
+- Release builds now use Swift optimization and support a separate packaging directory outside cloud-synced folders.
+
+### Fixed
+
+- Scan completion immediately publishes enriched and ARP-only devices, including for export, without waiting for animations.
+- Wi-Fi permission warnings remain visible after scanning.
+- New scan results no longer select a device and open the inspector automatically.
+- Published checksum files now refer to the downloadable DMG filename.
+
 ## [0.1.6] - 2026-08-23
 
 ### Fixed
@@ -78,7 +96,8 @@ No unreleased changes yet.
 - App icon, DMG volume icon, Finder layout, DMG file icon, and installation instructions.
 - Public GitHub repository with README, installation guide, privacy note, security policy, roadmap, screenshots, and CI.
 
-[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.3...v0.1.4

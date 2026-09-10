@@ -39,18 +39,4 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         }
     }
 
-    var emojiIcon: String {
-        switch self {
-        case .scan:
-            return "🌐"
-        case .wifi:
-            return "📶"
-        case .favorites:
-            return "⭐️"
-        case .history:
-            return "📅"
-        case .settings:
-            return "🧰"
-        }
-    }
 }

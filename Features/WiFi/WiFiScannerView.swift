@@ -2,293 +2,143 @@ import SwiftUI
 
 struct WiFiScannerView: View {
     @EnvironmentObject private var appState: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var searchText = ""
-    @State private var sortOrder: [KeyPathComparator<WiFiNetwork>] = [
-        KeyPathComparator(\.signalSortValue, order: .reverse)
-    ]
+    @State private var sortOrder = [KeyPathComparator<WiFiNetwork>(\.signalSortValue, order: .reverse)]
 
-    private var filteredNetworks: [WiFiNetwork] {
+    private var networks: [WiFiNetwork] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else {
-            return appState.wifiNetworks
-        }
-
-        return appState.wifiNetworks.filter { network in
-            [
-                network.displaySSID,
-                network.bssid,
-                network.security,
-                network.band,
-                network.phyDisplay
-            ]
-            .joined(separator: " ")
-            .localizedCaseInsensitiveContains(query)
-        }
-    }
-
-    private var sortedNetworks: [WiFiNetwork] {
-        guard !sortOrder.isEmpty else {
-            return filteredNetworks.sorted { $0.signalSortValue > $1.signalSortValue }
-        }
-        return filteredNetworks.sorted(using: sortOrder)
+        return appState.wifiNetworks.filter {
+            query.isEmpty || [$0.displaySSID, $0.bssid, $0.security, $0.band, $0.phyDisplay]
+                .joined(separator: " ").localizedCaseInsensitiveContains(query)
+        }.sorted(using: sortOrder)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            controls
+            HStack(spacing: 12) {
+                Label("Nearby Networks", systemImage: "wifi")
+                    .font(.subheadline.weight(.medium))
+                Spacer()
+                if let interfaceName = appState.wifiInterfaceName {
+                    Text(interfaceName).font(.callout.monospaced()).foregroundStyle(.secondary)
+                }
+                Text("2.4 / 5 / 6 GHz").font(.callout).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background { ChromeSurface() }
 
             Divider()
 
-            if sortedNetworks.isEmpty {
-                RadarEmptyStateView(
-                    isScanning: appState.isWiFiScanning,
-                    idleTitle: "No Wi-Fi Networks",
-                    scanningTitle: "Scanning Wi-Fi",
-                    idleSystemImage: "wifi",
-                    scanningSystemImage: "dot.radiowaves.left.and.right",
-                    idleMessage: "Run a Wi-Fi scan. macOS may require Location Services to show SSID and BSSID.",
-                    scanningMessage: "Listening for nearby access points and radio channels."
-                )
-                .transition(.opacity.combined(with: .scale(scale: 0.98)))
-            } else {
-                Table(sortedNetworks, selection: $appState.selectedWiFiNetworkIDs, sortOrder: $sortOrder) {
-                    TableColumn("Signal", value: \.signalSortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            SignalCell(network: network)
-                        }
-                    }
-                    .width(84)
-
-                    TableColumn("SSID", value: \.ssidSortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            SSIDCell(network: network)
-                        }
-                        .contextMenu {
-                            WiFiNetworkContextMenu(network: network)
-                        }
-                    }
-                    .width(150)
-
-                    TableColumn("BSSID", value: \.bssidSortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.bssid)
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(network.bssid == "-" ? .secondary : .primary)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(126)
-
-                    TableColumn("Security", value: \.securitySortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.security)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(108)
-
-                    TableColumn("Channel", value: \.channelSortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.channelDisplay)
-                                .font(.system(.body, design: .monospaced))
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(56)
-
-                    TableColumn("Band", value: \.bandSortValue) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.band)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(58)
-
-                    TableColumn("Width", value: \.channelWidth) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.channelWidth)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(58)
-
-                    TableColumn("PHY", value: \.phyDisplay) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.phyDisplay)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(88)
-
-                    TableColumn("Noise", value: \.noiseDisplay) { network in
-                        WiFiAppearingCell(id: network.id) {
-                            Text(network.noiseDisplay)
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(network.noise == nil ? .secondary : .primary)
-                                .lineLimit(1)
-                        }
-                    }
-                    .width(66)
-
+            Group {
+                if !searchText.isEmpty && networks.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                } else if appState.wifiNetworks.isEmpty {
+                    RadarEmptyStateView(
+                        isScanning: appState.isWiFiScanning,
+                        idleTitle: "Nearby Wi-Fi",
+                        scanningTitle: "Scanning Wi-Fi",
+                        idleSystemImage: "wifi",
+                        scanningSystemImage: "dot.radiowaves.left.and.right",
+                        idleMessage: "Wireless networks and radio channels",
+                        scanningMessage: "Listening for nearby access points"
+                    )
+                } else {
+                    networkTable
                 }
-                .animation(.snappy(duration: 0.22), value: sortedNetworks.count)
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.opacity)
+            .animation(InterfaceMotion.transition(reduceMotion: reduceMotion), value: appState.wifiNetworks.isEmpty)
+
+            Divider()
+            ScanStatusBar(message: appState.wifiStatusMessage, isScanning: appState.isWiFiScanning,
+                          count: appState.wifiNetworks.count, noun: appState.wifiNetworks.count == 1 ? "network" : "networks")
         }
-        .animation(.snappy(duration: 0.26), value: sortedNetworks.count)
-        .animation(.easeInOut(duration: 0.2), value: appState.isWiFiScanning)
         .searchable(text: $searchText, placement: .toolbar, prompt: "Search Wi-Fi networks")
     }
 
-    private var controls: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 10) {
-                Label("Wi-Fi Scanner", systemImage: "wifi")
-                    .font(.headline)
+    private func arrivalDelay(_ network: WiFiNetwork) -> Double {
+        Double(appState.wifiNetworks.firstIndex(where: { $0.id == network.id }) ?? 0) * 0.025
+    }
 
-                if let interfaceName = appState.wifiInterfaceName {
-                    Text(interfaceName)
-                        .font(.callout.monospaced())
-                        .foregroundStyle(.secondary)
+    private var networkTable: some View {
+        Table(networks, selection: $appState.selectedWiFiNetworkIDs, sortOrder: $sortOrder) {
+            TableColumn("Network", value: \.ssidSortValue) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "wifi").foregroundStyle(.secondary).frame(width: 18)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(network.displaySSID).fontWeight(.medium).lineLimit(1)
+                            Text(network.bssid).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                    }
                 }
-
-                Spacer()
-
-                Button {
-                    appState.startWiFiScan()
-                } label: {
-                    Label(appState.wifiNetworks.isEmpty ? "Scan" : "Refresh", systemImage: "arrow.clockwise")
+                .help("\(network.displaySSID)\n\(network.bssid)")
+                .contextMenu {
+                    Button("Copy SSID") { appState.copyWiFiSSID(network) }
+                    Button("Copy BSSID") { appState.copyWiFiBSSID(network) }
+                        .disabled(network.bssid == "-")
                 }
-                .disabled(appState.isWiFiScanning)
-                .keyboardShortcut("w", modifiers: [.command, .shift])
             }
+            .width(min: 220, ideal: 240, max: 360)
 
-            HStack(spacing: 12) {
-                if appState.isWiFiScanning {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(.cyan)
+            TableColumn("Signal", value: \.signalSortValue) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "cellularbars")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(network.signalPercent >= 60 ? Color.green : Color.orange)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("\(network.rssi) dBm").monospacedDigit()
+                            Text(network.signalQuality).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
                 }
-
-                Text(appState.wifiStatusMessage)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-
-                ScanActivityDots(isActive: appState.isWiFiScanning)
-
-                Spacer()
-
-                Text("\(appState.wifiNetworks.count) networks")
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
             }
-        }
-        .padding(12)
-        .background(.bar)
-    }
-}
+            .width(min: 104, ideal: 112)
 
-private struct SignalCell: View {
-    let network: WiFiNetwork
-
-    var body: some View {
-        HStack(spacing: 7) {
-            Image(systemName: signalSymbol)
-                .foregroundStyle(signalColor)
-                .frame(width: 18)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(network.rssi) dBm")
-                    .font(.system(.body, design: .monospaced))
-                    .lineLimit(1)
-
-                Text(network.signalQuality)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            TableColumn("Security", value: \.securitySortValue) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    Label(network.security, systemImage: network.security == "Open" ? "lock.open" : "lock")
+                        .lineLimit(1)
+                }
+                .help(network.security)
             }
-        }
-    }
+            .width(min: 130, ideal: 154)
 
-    private var signalSymbol: String {
-        switch network.signalPercent {
-        case 75...:
-            return "wifi"
-        case 45..<75:
-            return "wifi.exclamationmark"
-        default:
-            return "wifi.slash"
-        }
-    }
-
-    private var signalColor: Color {
-        switch network.signalPercent {
-        case 75...:
-            return .green
-        case 45..<75:
-            return .orange
-        default:
-            return .red
-        }
-    }
-}
-
-private struct SSIDCell: View {
-    let network: WiFiNetwork
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(network.displaySSID)
-                .lineLimit(1)
-            Text(network.security)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-    }
-}
-
-private struct WiFiAppearingCell<Content: View>: View {
-    let id: WiFiNetwork.ID
-    let content: Content
-    @State private var isVisible = false
-
-    init(id: WiFiNetwork.ID, @ViewBuilder content: () -> Content) {
-        self.id = id
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .opacity(isVisible ? 1 : 0.58)
-            .offset(y: isVisible ? 0 : 4)
-            .onAppear(perform: animateIn)
-            .onChange(of: id) { _, _ in
-                isVisible = false
-                animateIn()
+            TableColumn("Channel", value: \.channelSortValue) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    Text(network.channelDisplay).monospacedDigit()
+                }
             }
-    }
+            .width(62)
 
-    private func animateIn() {
-        withAnimation(.snappy(duration: 0.24)) {
-            isVisible = true
+            TableColumn("Band", value: \.bandSortValue) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) { Text(network.band) }
+            }
+            .width(68)
+
+            TableColumn("Width", value: \.channelWidth) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) { Text(network.channelWidth) }
+            }
+            .width(68)
+
+            TableColumn("PHY", value: \.phyDisplay) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    Text(network.phyDisplay).lineLimit(1)
+                }
+                .help(network.phyDisplay)
+            }
+            .width(min: 90, ideal: 120)
+
+            TableColumn("Noise", value: \.noiseDisplay) { network in
+                AppearingCell(id: network.id, delay: arrivalDelay(network)) {
+                    Text(network.noiseDisplay).monospacedDigit().foregroundStyle(.secondary)
+                }
+            }
+            .width(76)
         }
-    }
-}
-
-private struct WiFiNetworkContextMenu: View {
-    @EnvironmentObject private var appState: AppState
-    let network: WiFiNetwork
-
-    var body: some View {
-        Button("Copy SSID") {
-            appState.copyWiFiSSID(network)
-        }
-
-        Button("Copy BSSID") {
-            appState.copyWiFiBSSID(network)
-        }
-        .disabled(network.bssid == "-")
     }
 }

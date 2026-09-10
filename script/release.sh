@@ -17,7 +17,7 @@ What it does:
   - verifies the DMG checksum
   - commits the version bump
   - creates and pushes tag v<version>
-  - creates a GitHub Release with the DMG, checksum, and preview image
+  - creates a GitHub Release with the DMG and checksum
 USAGE
 }
 
@@ -41,9 +41,10 @@ if [[ "$SCRIPT_DIR" == "${BASH_SOURCE[0]}" ]]; then
 fi
 cd "$SCRIPT_DIR/.."
 ROOT_DIR="$PWD"
-DMG_PATH="$ROOT_DIR/dist/LanScope Mac.dmg"
-SHA_PATH="$ROOT_DIR/dist/LanScope Mac.dmg.sha256"
-NOTES_PATH="$ROOT_DIR/dist/release-notes-$TAG.md"
+DIST_DIR="${LANSCOPE_DIST_DIR:-$ROOT_DIR/dist}"
+DMG_PATH="$DIST_DIR/LanScope Mac.dmg"
+SHA_PATH="$DIST_DIR/LanScope Mac.dmg.sha256"
+NOTES_PATH="$DIST_DIR/release-notes-$TAG.md"
 
 DIRTY_FILES="$(git status --porcelain | awk '{print $2}' | sort -u)"
 if [[ -n "$DIRTY_FILES" && "$DIRTY_FILES" != "CHANGELOG.md" ]]; then
@@ -79,20 +80,21 @@ echo "running validation..."
 swift test
 
 echo "building app bundle and DMG..."
-/bin/bash ./script/build_and_run.sh --bundle-only
+BUILD_CONFIGURATION=release /bin/bash ./script/build_and_run.sh --bundle-only
 
-BUNDLE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' 'dist/LanScope Mac.app/Contents/Info.plist')"
+BUNDLE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$DIST_DIR/LanScope Mac.app/Contents/Info.plist")"
 if [[ "$BUNDLE_VERSION" != "$VERSION" ]]; then
   echo "error: app bundle version is $BUNDLE_VERSION, expected $VERSION" >&2
   exit 1
 fi
 
 /bin/bash ./script/package_dmg.sh
-shasum -a 256 "$DMG_PATH" | tee "$SHA_PATH" >/dev/null
+DIGEST="$(shasum -a 256 "$DMG_PATH")"
+printf '%s  LanScope.Mac.dmg\n' "${DIGEST%% *}" > "$SHA_PATH"
 hdiutil verify "$DMG_PATH"
 
 echo "preparing release notes..."
-mkdir -p "$ROOT_DIR/dist"
+mkdir -p "$DIST_DIR"
 awk -v version="$VERSION" '
   $0 ~ "^## \\[" version "\\]" { found = 1; print; next }
   found && /^## \[/ { exit }

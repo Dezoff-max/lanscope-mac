@@ -15,14 +15,15 @@ struct LanScopeMacApp: App {
             ContentView()
                 .environmentObject(appState)
                 .preferredColorScheme(appState.config.theme.colorScheme)
-                .frame(minWidth: 1120, idealWidth: 1180, minHeight: 700, idealHeight: 760)
+                .frame(minWidth: 960, idealWidth: 1180, minHeight: 600, idealHeight: 760)
                 .background(
                     AppWindowConfigurator(
                         defaultSize: CGSize(width: 1180, height: 760),
-                        minimumSize: CGSize(width: 1120, height: 700)
+                        minimumSize: CGSize(width: 960, height: 600)
                     )
                 )
         }
+        .windowToolbarStyle(.unified)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About LanScope Mac") {
@@ -64,7 +65,8 @@ struct LanScopeMacApp: App {
         Settings {
             SettingsView(config: $appState.config)
                 .environmentObject(appState)
-                .frame(width: 520)
+                .preferredColorScheme(appState.config.theme.colorScheme)
+                .frame(width: 600, height: 680)
         }
     }
 }

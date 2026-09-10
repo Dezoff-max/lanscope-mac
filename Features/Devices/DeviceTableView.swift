@@ -21,7 +21,7 @@ struct DeviceTableView: View {
                     StatusBadge(status: device.status)
                 }
             }
-            .width(64)
+            .width(74)
 
             TableColumn("Name", value: \.nameSortValue) { device in
                 AppearingCell(id: device.id) {
@@ -31,18 +31,18 @@ struct DeviceTableView: View {
                     DeviceContextMenu(device: device)
                 }
             }
-            .width(164)
+            .width(min: 164, ideal: 190, max: 320)
 
-            TableColumn("IP", value: \.ipSortValue) { device in
+            TableColumn("IP Address", value: \.ipSortValue) { device in
                 AppearingCell(id: device.id) {
                     Text(device.ipAddress)
                         .font(.system(.body, design: .monospaced))
                         .lineLimit(1)
                 }
             }
-            .width(112)
+            .width(128)
 
-            TableColumn("MAC", value: \.macSortValue) { device in
+            TableColumn("MAC Address", value: \.macSortValue) { device in
                 AppearingCell(id: device.id) {
                     Text(device.macAddress ?? "-")
                         .font(.system(.body, design: .monospaced))
@@ -50,15 +50,16 @@ struct DeviceTableView: View {
                         .lineLimit(1)
                 }
             }
-            .width(144)
+            .width(150)
 
             TableColumn("Vendor", value: \.vendorSortValue) { device in
                 AppearingCell(id: device.id) {
                     Text(device.vendor)
                         .lineLimit(1)
                 }
+                .help(device.vendor)
             }
-            .width(198)
+            .width(min: 140, ideal: 198, max: 320)
 
             TableColumn("Ports", value: \.openPortsSortValue) { device in
                 AppearingCell(id: device.id) {
@@ -77,7 +78,7 @@ struct DeviceTableView: View {
             }
             .width(110)
 
-            TableColumn("Seen", value: \.lastSeen) { device in
+            TableColumn("Last Seen", value: \.lastSeen) { device in
                 AppearingCell(id: device.id) {
                     Text(DateFormatter.lanScopeTime.string(from: device.lastSeen))
                         .foregroundStyle(.secondary)
@@ -86,7 +87,6 @@ struct DeviceTableView: View {
             }
             .width(88)
         }
-        .animation(.snappy(duration: 0.22), value: devices.count)
     }
 }
 
@@ -99,8 +99,9 @@ private struct DeviceNameCell: View {
                 .foregroundStyle(device.isFavorite ? Color.yellow : Color.secondary)
                 .frame(width: 16)
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(device.displayName)
+                    .fontWeight(.medium)
                     .lineLimit(1)
                 if let subtitle = device.tableNameSubtitle {
                     Text(subtitle)
@@ -109,34 +110,6 @@ private struct DeviceNameCell: View {
                         .lineLimit(1)
                 }
             }
-        }
-    }
-}
-
-private struct AppearingCell<Content: View>: View {
-    let id: Device.ID
-    let content: Content
-    @State private var isVisible = false
-
-    init(id: Device.ID, @ViewBuilder content: () -> Content) {
-        self.id = id
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .opacity(isVisible ? 1 : 0.58)
-            .offset(y: isVisible ? 0 : 4)
-            .onAppear(perform: animateIn)
-            .onChange(of: id) { _, _ in
-                isVisible = false
-                animateIn()
-            }
-    }
-
-    private func animateIn() {
-        withAnimation(.snappy(duration: 0.24)) {
-            isVisible = true
         }
     }
 }

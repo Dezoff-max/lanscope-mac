@@ -21,6 +21,8 @@ Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## Screenshots
 
+The following screenshots show the earlier 0.1.x interface. Version 0.2.0 replaces the emoji navigation and full-window animation with native SF Symbols, a compact activity illustration, and contextual controls.
+
 ![Scan empty state](docs/screenshots/scan-empty.png)
 
 ![Settings](docs/screenshots/settings.png)
@@ -40,12 +42,19 @@ Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 - CSV / JSON export and selected-row clipboard copy.
 - Quick actions: Browser, SSH through Terminal, SMB, VNC, Copy IP, Copy MAC, Favorite, and Wake-on-LAN.
 - App icon, DMG volume icon, Finder layout, and custom DMG file icon from `Resources/AppIcon.icns`.
+- Native light/dark appearance, a collapsible device inspector, and accessibility-aware motion and materials.
+
+## Interface
+
+LAN and Wi-Fi scans share the same status and result presentation. Results are available immediately; short row transitions never delay selection or export. The network illustration animates only while scanning in an active window and respects Reduce Motion. Toolbar and status surfaces respect Reduce Transparency and increased contrast.
+
+Select a device to open its inspector, or toggle it with the toolbar's sidebar icon. Tables retain horizontal scrolling at smaller window sizes so network identifiers remain readable.
 
 ## Installation
 
 See [INSTALL.md](INSTALL.md) for installation instructions.
 
-The current MVP DMG is unsigned and not notarized. For public distribution, use GitHub Releases and clearly mark unsigned builds.
+The current MVP app uses an ad-hoc signature, not a Developer ID certificate, and is not notarized. Download builds from GitHub Releases and follow the installation guide.
 
 ## Run in Xcode
 
@@ -106,6 +115,14 @@ The same action is available in Settings -> Lookup -> Update OUI from IEEE. User
 
 The artifact is created at `dist/LanScope Mac.dmg`.
 
+For an optimized app, build with `BUILD_CONFIGURATION=release`. If the checkout is in an iCloud-synced folder, stage signed artifacts outside that folder to avoid Finder metadata invalidating the signature:
+
+```bash
+export LANSCOPE_DIST_DIR=/tmp/lanscope-release
+BUILD_CONFIGURATION=release /bin/bash ./script/build_and_run.sh --bundle-only
+/bin/bash ./script/package_dmg.sh
+```
+
 The DMG contains:
 
 - `LanScope Mac.app`
@@ -124,10 +141,10 @@ The DMG is intentionally not committed to git. Publish distributable builds thro
 To publish a new version, update [CHANGELOG.md](CHANGELOG.md) first, then run:
 
 ```bash
-/bin/bash ./script/release.sh 0.1.2
+/bin/bash ./script/release.sh 0.2.0
 ```
 
-The release script updates app metadata, runs validation and tests, builds the app bundle and DMG, verifies the DMG checksum, commits the version bump, pushes `main`, creates tag `v0.1.2`, and publishes a GitHub Release with the DMG assets.
+The release script updates app metadata, runs validation and tests, builds an optimized app bundle and DMG, verifies the DMG, commits the version bump, pushes `main`, creates the version tag, and publishes a GitHub Release with the DMG and checksum. It also honors `LANSCOPE_DIST_DIR`.
 
 ## Architecture
 

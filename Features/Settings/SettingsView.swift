@@ -68,9 +68,8 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(16)
-        .frame(minWidth: 460, idealWidth: 540, maxWidth: 620, maxHeight: .infinity, alignment: .topLeading)
-        .animation(.snappy(duration: 0.2), value: appState.vendorDatabaseCount)
+        .frame(minWidth: 460, idealWidth: 580, maxWidth: 660, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var portsText: Binding<String> {

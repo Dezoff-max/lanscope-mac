@@ -44,8 +44,6 @@ final class AppState: ObservableObject {
     private var wifiLocationPermission: WiFiLocationPermission?
     private var scanTask: Task<Void, Never>?
     private var wifiScanTask: Task<Void, Never>?
-    private var animatedInsertionTask: Task<Void, Never>?
-    private var pendingAnimatedDevices: [Device] = []
     private var currentScanDevices: [Device] = []
     private var currentScanStartedAt: Date?
     private var currentScanTotalHosts = 0
@@ -119,15 +117,11 @@ final class AppState: ObservableObject {
 
         let scanConfig = config.normalized()
         config = scanConfig
-        animatedInsertionTask?.cancel()
-        animatedInsertionTask = nil
-        pendingAnimatedDevices = []
+        selectedSection = .scan
         currentScanDevices = []
         currentScanStartedAt = Date()
         currentScanTotalHosts = 0
-        withAnimation(.snappy(duration: 0.22)) {
-            devices = []
-        }
+        devices = []
         selectedDeviceIDs = []
         progress = 0
         isScanning = true
@@ -168,9 +162,7 @@ final class AppState: ObservableObject {
         selectedSection = .wifi
         selectedDeviceIDs = []
         selectedWiFiNetworkIDs = []
-        withAnimation(.snappy(duration: 0.22)) {
-            wifiNetworks = []
-        }
+        wifiNetworks = []
         isWiFiScanning = true
         wifiStatusMessage = "Requesting Wi-Fi access..."
 
@@ -191,19 +183,12 @@ final class AppState: ObservableObject {
             do {
                 let result = try await wifiScanner.scan(includeHidden: true)
                 wifiInterfaceName = result.interfaceName
-                if result.networks.isEmpty {
-                    isWiFiScanning = false
-                    wifiScanTask = nil
-                    wifiStatusMessage = "No Wi-Fi networks found"
-                } else {
-                    wifiStatusMessage = "Found 0 of \(result.networks.count) network(s)"
-                    let completed = await revealWiFiNetworks(result.networks)
-                    if completed {
-                        wifiStatusMessage = "Scan complete"
-                    }
-                    isWiFiScanning = false
-                    wifiScanTask = nil
-                }
+                wifiNetworks = result.networks
+                isWiFiScanning = false
+                wifiScanTask = nil
+                wifiStatusMessage = authorizationStatus == .denied || authorizationStatus == .restricted
+                    ? "Location access is required to display network names and BSSIDs."
+                    : result.networks.isEmpty ? "No Wi-Fi networks found" : "Scan complete"
             } catch is CancellationError {
                 isWiFiScanning = false
                 wifiScanTask = nil
@@ -362,32 +347,7 @@ final class AppState: ObservableObject {
         wifiStatusMessage = "Copied BSSID"
     }
 
-    private func revealWiFiNetworks(_ networks: [WiFiNetwork]) async -> Bool {
-        for network in networks {
-            if Task.isCancelled {
-                return false
-            }
-
-            do {
-                try await Task.sleep(nanoseconds: 55_000_000)
-            } catch {
-                return false
-            }
-
-            withAnimation(.snappy(duration: 0.24)) {
-                if let index = wifiNetworks.firstIndex(where: { $0.id == network.id }) {
-                    wifiNetworks[index] = network
-                } else {
-                    wifiNetworks.append(network)
-                }
-            }
-            wifiStatusMessage = "Found \(wifiNetworks.count) of \(networks.count) network(s)"
-        }
-
-        return true
-    }
-
-    private func handleScanEvent(_ event: ScanProgressEvent) {
+    func handleScanEvent(_ event: ScanProgressEvent) {
         switch event {
         case .started(let total):
             currentScanTotalHosts = total
@@ -402,7 +362,7 @@ final class AppState: ObservableObject {
             var resolvedDevice = device
             resolvedDevice.isFavorite = favorites.contains { $0.matches(device) }
             recordCurrentScanDevice(resolvedDevice)
-            queueAnimatedDevice(resolvedDevice)
+            devices = currentScanDevices
             progress = total == 0 ? 0 : Double(completed) / Double(total)
             statusMessage = "Found \(currentScanDevices.count) device(s)"
 
@@ -414,10 +374,7 @@ final class AppState: ObservableObject {
                 return updated
             }
             currentScanDevices = favoriteAwareDevices.sorted { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
-            for device in currentScanDevices {
-                mergeCompletedDevice(device)
-            }
-            devices.sort { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
+            devices = currentScanDevices
             progress = 1
             statusMessage = "Found \(currentScanDevices.count) device(s)"
         }
@@ -453,81 +410,6 @@ final class AppState: ObservableObject {
             currentScanDevices.append(device)
         }
         currentScanDevices.sort { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
-    }
-
-    private func queueAnimatedDevice(_ device: Device) {
-        guard !hasVisibleOrPendingDevice(ipAddress: device.ipAddress) else {
-            return
-        }
-
-        pendingAnimatedDevices.append(device)
-        startAnimatedInsertionIfNeeded()
-    }
-
-    private func hasVisibleOrPendingDevice(ipAddress: String) -> Bool {
-        devices.contains { $0.ipAddress == ipAddress }
-            || pendingAnimatedDevices.contains { $0.ipAddress == ipAddress }
-    }
-
-    private func mergeCompletedDevice(_ device: Device) {
-        if let visibleIndex = devices.firstIndex(where: { $0.ipAddress == device.ipAddress }) {
-            devices[visibleIndex] = device
-            return
-        }
-
-        if let pendingIndex = pendingAnimatedDevices.firstIndex(where: { $0.ipAddress == device.ipAddress }) {
-            pendingAnimatedDevices[pendingIndex] = device
-            return
-        }
-
-        queueAnimatedDevice(device)
-    }
-
-    private func startAnimatedInsertionIfNeeded() {
-        guard animatedInsertionTask == nil else {
-            return
-        }
-
-        animatedInsertionTask = Task { [weak self] in
-            while !Task.isCancelled {
-                do {
-                    try await Task.sleep(nanoseconds: 45_000_000)
-                } catch {
-                    return
-                }
-
-                guard let self else {
-                    return
-                }
-
-                if !insertNextAnimatedDevice() {
-                    animatedInsertionTask = nil
-                    return
-                }
-            }
-        }
-    }
-
-    private func insertNextAnimatedDevice() -> Bool {
-        guard !pendingAnimatedDevices.isEmpty else {
-            return false
-        }
-
-        let device = pendingAnimatedDevices.removeFirst()
-        withAnimation(.snappy(duration: 0.24)) {
-            if let index = devices.firstIndex(where: { $0.ipAddress == device.ipAddress }) {
-                devices[index] = device
-            } else {
-                devices.append(device)
-            }
-            devices.sort { IPAddressSorter.compare($0.ipAddress, $1.ipAddress) }
-        }
-
-        if selectedDeviceIDs.isEmpty {
-            selectedDeviceIDs = [device.id]
-        }
-
-        return !pendingAnimatedDevices.isEmpty
     }
 
     private func updateFavoriteState(for device: Device, isFavorite: Bool) {

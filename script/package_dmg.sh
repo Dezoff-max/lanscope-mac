@@ -7,7 +7,7 @@ if [[ "$SCRIPT_DIR" == "${BASH_SOURCE[0]}" ]]; then
 fi
 cd "$SCRIPT_DIR/.."
 ROOT_DIR="$PWD"
-DIST_DIR="$ROOT_DIR/dist"
+DIST_DIR="${LANSCOPE_DIST_DIR:-$ROOT_DIR/dist}"
 APP_BUNDLE="$DIST_DIR/LanScope Mac.app"
 DMG_PATH="$DIST_DIR/LanScope Mac.dmg"
 DMG_RW_PATH="$DIST_DIR/LanScope Mac.rw.dmg"

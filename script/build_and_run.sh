@@ -17,7 +17,7 @@ if [[ "$SCRIPT_DIR" == "${BASH_SOURCE[0]}" ]]; then
 fi
 cd "$SCRIPT_DIR/.."
 ROOT_DIR="$PWD"
-DIST_DIR="$ROOT_DIR/dist"
+DIST_DIR="${LANSCOPE_DIST_DIR:-$ROOT_DIR/dist}"
 APP_BUNDLE="$DIST_DIR/$DISPLAY_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
@@ -25,13 +25,14 @@ APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
+BUILD_CONFIGURATION="${BUILD_CONFIGURATION:-debug}"
 
 echo "stopping existing $DISPLAY_NAME..."
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 
 echo "building SwiftPM target..."
-swift build
-BUILD_DIR="$(swift build --show-bin-path)"
+swift build -c "$BUILD_CONFIGURATION"
+BUILD_DIR="$(swift build -c "$BUILD_CONFIGURATION" --show-bin-path)"
 BUILD_BINARY="$BUILD_DIR/$APP_NAME"
 
 echo "staging app bundle..."
