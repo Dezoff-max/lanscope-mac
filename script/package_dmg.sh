@@ -57,7 +57,9 @@ if command -v SetFile >/dev/null 2>&1; then
 fi
 
 echo "applying Finder layout..."
-if ! osascript <<OSA
+if [[ -n "${LANSCOPE_DMG_LAYOUT_FILE:-}" ]]; then
+  cp "$LANSCOPE_DMG_LAYOUT_FILE" "$MOUNT_POINT/.DS_Store"
+elif ! osascript <<OSA
 with timeout of 10 seconds
 tell application "Finder"
   tell disk "$VOLUME_NAME"

@@ -115,6 +115,8 @@ The same action is available in Settings -> Lookup -> Update OUI from IEEE. User
 
 The artifact is created at `dist/LanScope Mac.dmg`.
 
+Packaging can reuse an existing Finder layout without UI automation: set `LANSCOPE_DMG_LAYOUT_FILE` to a `.DS_Store` file from a previous LanScope Mac volume with the same contents and background paths.
+
 For an optimized app, build with `BUILD_CONFIGURATION=release`. If the checkout is in an iCloud-synced folder, stage signed artifacts outside that folder to avoid Finder metadata invalidating the signature:
 
 ```bash
