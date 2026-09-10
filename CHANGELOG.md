@@ -8,6 +8,13 @@ The project uses semantic versioning while it is in MVP development.
 
 No unreleased changes yet.
 
+## [0.2.1] - 2026-09-10
+
+### Fixed
+
+- Constrained empty scanner views to the available content area so switching sections or reopening a compact window cannot push content underneath the toolbar or hide the status bar.
+- Applied content-based minimum window sizing while preserving user-resized windows.
+
 ## [0.2.0] - 2026-09-10
 
 ### Changed
@@ -96,7 +103,8 @@ No unreleased changes yet.
 - App icon, DMG volume icon, Finder layout, DMG file icon, and installation instructions.
 - Public GitHub repository with README, installation guide, privacy note, security policy, roadmap, screenshots, and CI.
 
-[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.4...v0.1.5

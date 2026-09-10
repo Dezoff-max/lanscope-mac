@@ -14,16 +14,20 @@ struct ContentView: View {
             SidebarView(selection: $appState.selectedSection)
                 .navigationSplitViewColumnWidth(min: 140, ideal: 156, max: 200)
         } detail: {
-            HStack(spacing: 0) {
-                mainContent
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .background(Color(nsColor: .textBackgroundColor))
-                if showsInspector {
-                    Divider()
-                    DeviceDetailView(device: appState.selectedDevice)
-                        .frame(width: 290)
-                        .transition(.opacity)
+            // Bound flexible empty states to the split view's available content area.
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    mainContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .background(Color(nsColor: .textBackgroundColor))
+                    if showsInspector {
+                        Divider()
+                        DeviceDetailView(device: appState.selectedDevice)
+                            .frame(width: 290)
+                            .transition(.opacity)
+                    }
                 }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
             }
             .navigationTitle(appState.currentSection.title)
         }

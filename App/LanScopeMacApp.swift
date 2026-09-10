@@ -24,6 +24,7 @@ struct LanScopeMacApp: App {
                 )
         }
         .windowToolbarStyle(.unified)
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About LanScope Mac") {
