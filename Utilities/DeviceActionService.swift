@@ -7,6 +7,8 @@ enum DeviceActionService {
         let target: URL?
         if device.openPorts.contains(443) {
             target = URL(string: "https://\(device.ipAddress)")
+        } else if device.openPorts.contains(8443) {
+            target = URL(string: "https://\(device.ipAddress):8443")
         } else if device.openPorts.contains(80) {
             target = URL(string: "http://\(device.ipAddress)")
         } else if device.openPorts.contains(8080) {

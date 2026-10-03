@@ -9,49 +9,46 @@ enum WiFiScanError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noInterface:
-            return "No Wi-Fi interface was found"
+            return "Интерфейс Wi-Fi не найден"
         case .poweredOff(let interfaceName):
-            return "Wi-Fi is turned off on \(interfaceName)"
+            return "Wi-Fi выключен на \(interfaceName)"
         case .scanUnavailable:
-            return "macOS did not return Wi-Fi scan results"
+            return "macOS не вернула результаты Wi-Fi вовремя"
         }
     }
 }
 
 final class WiFiScanner {
+    private static let queue = DispatchQueue(label: "LanScope.WiFi.scan", qos: .utility)
+
     func scan(includeHidden: Bool = true) async throws -> WiFiScanResult {
-        try await Task.detached(priority: .userInitiated) {
-            let client = CWWiFiClient.shared()
-            let interfaces = client.interfaces() ?? []
-            let interface = interfaces.first(where: { $0.powerOn() }) ?? client.interface()
-
-            guard let interface else {
-                throw WiFiScanError.noInterface
-            }
-
-            let interfaceName = interface.interfaceName ?? "Wi-Fi"
-            guard interface.powerOn() else {
-                throw WiFiScanError.poweredOff(interfaceName: interfaceName)
-            }
-
-            let scannedAt = Date()
-            let scanResults = try interface.scanForNetworks(withName: nil, includeHidden: includeHidden)
-
-            let networks = scanResults
-                .map { Self.makeNetwork(from: $0, scannedAt: scannedAt) }
-                .sorted { lhs, rhs in
-                    if lhs.signalSortValue != rhs.signalSortValue {
-                        return lhs.signalSortValue > rhs.signalSortValue
-                    }
-                    return lhs.ssidSortValue < rhs.ssidSortValue
+        let completion = WiFiCompletion()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                completion.install(continuation)
+                Self.queue.async {
+                    guard !completion.isFinished else { return }
+                    do { completion.finish(.success(try Self.performScan(includeHidden: includeHidden))) }
+                    catch { completion.finish(.failure(error)) }
                 }
+                DispatchQueue.global().asyncAfter(deadline: .now() + 25) {
+                    completion.finish(.failure(WiFiScanError.scanUnavailable))
+                }
+            }
+        } onCancel: { completion.finish(.failure(CancellationError())) }
+    }
 
-            return WiFiScanResult(
-                interfaceName: interfaceName,
-                networks: networks,
-                scannedAt: scannedAt
-            )
-        }.value
+    private static func performScan(includeHidden: Bool) throws -> WiFiScanResult {
+        let client = CWWiFiClient.shared()
+        let interface = (client.interfaces() ?? []).first(where: { $0.powerOn() }) ?? client.interface()
+        guard let interface else { throw WiFiScanError.noInterface }
+        let name = interface.interfaceName ?? "Wi-Fi"
+        guard interface.powerOn() else { throw WiFiScanError.poweredOff(interfaceName: name) }
+        let results = try interface.scanForNetworks(withName: nil, includeHidden: includeHidden)
+        let date = Date()
+        let networks = results.map { makeNetwork(from: $0, scannedAt: date) }.sorted { $0.rssi > $1.rssi }
+        return WiFiScanResult(interfaceName: name, networks: networks, scannedAt: date,
+                              currentBSSID: interface.bssid(), currentSSID: interface.ssid())
     }
 
     private static func makeNetwork(from network: CWNetwork, scannedAt: Date) -> WiFiNetwork {
@@ -157,5 +154,24 @@ final class WiFiScanner {
         default:
             return "Unknown"
         }
+    }
+}
+
+// Cancellation ends the caller's wait; CoreWLAN's synchronous scan may finish later.
+private final class WiFiCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var result: Result<WiFiScanResult, Error>?
+    private var continuation: CheckedContinuation<WiFiScanResult, Error>?
+    var isFinished: Bool { lock.lock(); defer { lock.unlock() }; return result != nil }
+    func install(_ value: CheckedContinuation<WiFiScanResult, Error>) {
+        lock.lock()
+        if let result { lock.unlock(); value.resume(with: result) }
+        else { continuation = value; lock.unlock() }
+    }
+    func finish(_ value: Result<WiFiScanResult, Error>) {
+        lock.lock()
+        guard result == nil else { lock.unlock(); return }
+        result = value; let pending = continuation; continuation = nil
+        lock.unlock(); pending?.resume(with: value)
     }
 }

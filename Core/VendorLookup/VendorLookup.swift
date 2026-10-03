@@ -3,6 +3,7 @@ import Foundation
 final class VendorLookup {
     private var vendors: [String: String]
     private let resourceName: String
+    private let lock = NSLock()
 
     init(resourceName: String = "oui") {
         self.resourceName = resourceName
@@ -10,13 +11,19 @@ final class VendorLookup {
     }
 
     var vendorCount: Int {
-        vendors.count
+        lock.lock()
+        defer { lock.unlock() }
+        return vendors.count
     }
 
     @discardableResult
     func reload() -> Int {
-        vendors = OUIDatabaseStore.loadMergedVendors(resourceName: resourceName)
-        return vendors.count
+        // Load outside the lock so active scans can keep using the previous database.
+        let snapshot = OUIDatabaseStore.loadMergedVendors(resourceName: resourceName)
+        lock.lock()
+        vendors = snapshot
+        lock.unlock()
+        return snapshot.count
     }
 
     func vendor(for macAddress: String?) -> String {
@@ -25,7 +32,10 @@ final class VendorLookup {
             return "Unknown"
         }
 
-        if let vendor = vendors[oui] {
+        lock.lock()
+        let vendor = vendors[oui]
+        lock.unlock()
+        if let vendor {
             return vendor
         }
 

@@ -14,6 +14,7 @@ struct LanScopeMacApp: App {
         WindowGroup("LanScope Mac") {
             ContentView()
                 .environmentObject(appState)
+                .environmentObject(appState.monitor)
                 .preferredColorScheme(appState.config.theme.colorScheme)
                 .frame(minWidth: 960, idealWidth: 1180, minHeight: 600, idealHeight: 760)
                 .background(
@@ -27,19 +28,19 @@ struct LanScopeMacApp: App {
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
-                Button("About LanScope Mac") {
+                Button("О LanScope Mac") {
                     AboutWindowController.shared.show()
                 }
             }
 
-            CommandMenu("Scanner") {
-                Button("Scan") {
+            CommandMenu("Сканирование") {
+                Button("Сканировать") {
                     appState.startScan()
                 }
                 .keyboardShortcut("r", modifiers: [.command])
                 .disabled(appState.isScanning)
 
-                Button("Stop") {
+                Button("Остановить") {
                     appState.stopScan()
                 }
                 .keyboardShortcut(".", modifiers: [.command])
@@ -47,7 +48,7 @@ struct LanScopeMacApp: App {
 
                 Divider()
 
-                Button("Scan Wi-Fi") {
+                Button("Сканировать Wi-Fi") {
                     appState.startWiFiScan()
                 }
                 .keyboardShortcut("w", modifiers: [.command, .shift])
@@ -55,17 +56,18 @@ struct LanScopeMacApp: App {
 
                 Divider()
 
-                Button("Copy Selected Rows") {
+                Button("Копировать выбранные строки") {
                     appState.copySelectedRows()
                 }
                 .keyboardShortcut("c", modifiers: [.command, .shift])
-                .disabled(appState.exportableSelection.isEmpty)
+                .disabled(appState.selectedDeviceIDs.isEmpty)
             }
         }
 
         Settings {
             SettingsView(config: $appState.config)
                 .environmentObject(appState)
+                .environmentObject(appState.monitor)
                 .preferredColorScheme(appState.config.theme.colorScheme)
                 .frame(width: 600, height: 680)
         }

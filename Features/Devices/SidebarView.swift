@@ -16,6 +16,6 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .navigationTitle("LanScope Mac")
-        .frame(minWidth: 140)
+        .frame(minWidth: 164)
     }
 }

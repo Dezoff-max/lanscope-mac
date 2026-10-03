@@ -10,24 +10,9 @@ struct AppearingCell<ID: Hashable, Content: View>: View {
     let id: ID
     var delay: Double = 0
     @ViewBuilder let content: () -> Content
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isVisible = false
-
     var body: some View {
-        content()
-            .frame(minHeight: 32)
-            .opacity(reduceMotion || isVisible ? 1 : 0.45)
-            .offset(y: reduceMotion || isVisible ? 0 : 3)
-            .task(id: id) {
-                // Animate presentation only; results stay available for selection and export.
-                isVisible = false
-                await Task.yield()
-                guard !Task.isCancelled else { return }
-                withAnimation(InterfaceMotion.transition(reduceMotion: reduceMotion)
-                    .delay(reduceMotion ? 0 : min(delay, 0.24))) {
-                    isVisible = true
-                }
-            }
+        // Keep reused Table cells stable when scrolling or sorting.
+        content().frame(minHeight: 32)
     }
 }
 
@@ -51,7 +36,7 @@ struct ScanStatusBar: View {
     let noun: String
     var progress: Double? = nil
 
-    private var failed: Bool { message.localizedCaseInsensitiveContains("failed") }
+    private var failed: Bool { message.localizedCaseInsensitiveContains("failed") || message.localizedCaseInsensitiveContains("ошиб") || message.localizedCaseInsensitiveContains("не удалось") }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -75,7 +60,7 @@ struct ScanStatusBar: View {
             if isScanning, let progress {
                 ProgressView(value: progress)
                     .frame(width: 100)
-                    .accessibilityLabel("Scan progress")
+                    .accessibilityLabel("Ход сканирования")
             }
 
             Text("\(count) \(noun)")

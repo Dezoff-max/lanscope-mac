@@ -22,6 +22,11 @@ final class WiFiLocationPermission: NSObject, CLLocationManagerDelegate {
         }
     }
 
+    func cancelPendingRequest() {
+        continuation?.resume(returning: manager?.authorizationStatus ?? .notDetermined)
+        continuation = nil
+    }
+
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         Task { @MainActor in

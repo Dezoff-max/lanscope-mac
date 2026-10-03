@@ -12,15 +12,15 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .scan:
-            return "Scan"
+            return "Сканирование"
         case .wifi:
             return "Wi-Fi"
         case .favorites:
-            return "Favorites"
+            return "Избранное"
         case .history:
-            return "History"
+            return "История"
         case .settings:
-            return "Settings"
+            return "Настройки"
         }
     }
 

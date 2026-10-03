@@ -2,8 +2,8 @@ import SwiftUI
 
 struct RadarEmptyStateView: View {
     let isScanning: Bool
-    var idleTitle = "Ready to Scan"
-    var scanningTitle = "Scanning Network"
+    var idleTitle = "Готово к сканированию"
+    var scanningTitle = "Сканирование сети"
     var idleSystemImage = "network"
     var scanningSystemImage = "network"
     var idleMessage: String? = nil
@@ -17,7 +17,7 @@ struct RadarEmptyStateView: View {
             VStack(spacing: 6) {
                 Text(isScanning ? scanningTitle : idleTitle)
                     .font(.title2.weight(.semibold))
-                Text(isScanning ? (scanningMessage ?? "Discovering local devices and services") : (idleMessage ?? "Local network discovery"))
+                Text(isScanning ? (scanningMessage ?? "Поиск устройств и сервисов локальной сети") : (idleMessage ?? "Обнаружение устройств локальной сети"))
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

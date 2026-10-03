@@ -7,7 +7,7 @@ DISPLAY_NAME="LanScope Mac"
 BUNDLE_ID="com.lanscope.mac"
 MIN_SYSTEM_VERSION="14.0"
 ICON_FILE="AppIcon.icns"
-APP_VERSION="0.2.1"
+APP_VERSION="0.3.0"
 APP_BUILD="1"
 APP_COPYRIGHT="Copyright © 2026 @rootoff. All rights reserved."
 
@@ -27,12 +27,15 @@ INFO_PLIST="$APP_CONTENTS/Info.plist"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 BUILD_CONFIGURATION="${BUILD_CONFIGURATION:-debug}"
 
-echo "stopping existing $DISPLAY_NAME..."
-pkill -x "$APP_NAME" >/dev/null 2>&1 || true
+if [[ "$MODE" != "--bundle-only" && "$MODE" != "bundle" ]]; then
+  echo "stopping existing $DISPLAY_NAME..."
+  pkill -x "$APP_NAME" >/dev/null 2>&1 || true
+fi
 
 echo "building SwiftPM target..."
-swift build -c "$BUILD_CONFIGURATION"
-BUILD_DIR="$(swift build -c "$BUILD_CONFIGURATION" --show-bin-path)"
+BUILD_SCRATCH="${LANSCOPE_BUILD_DIR:-/tmp/lanscope-build-$UID}"
+swift build -c "$BUILD_CONFIGURATION" --scratch-path "$BUILD_SCRATCH"
+BUILD_DIR="$(swift build -c "$BUILD_CONFIGURATION" --scratch-path "$BUILD_SCRATCH" --show-bin-path)"
 BUILD_BINARY="$BUILD_DIR/$APP_NAME"
 
 echo "staging app bundle..."
@@ -67,11 +70,13 @@ cat >"$INFO_PLIST" <<PLIST
   <key>NSHumanReadableCopyright</key>
   <string>$APP_COPYRIGHT</string>
   <key>NSLocationUsageDescription</key>
-  <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
+  <string>Доступ к геопозиции нужен только для локального отображения названий и BSSID ближайших сетей Wi-Fi.</string>
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>LanScope Mac uses location permission only to display nearby Wi-Fi network names and BSSIDs locally.</string>
+  <string>Доступ к геопозиции нужен только для локального отображения названий и BSSID ближайших сетей Wi-Fi.</string>
+  <key>NSBonjourServices</key>
+  <array><string>_http._tcp</string><string>_https._tcp</string><string>_ssh._tcp</string><string>_smb._tcp</string><string>_workstation._tcp</string><string>_ipp._tcp</string><string>_ipps._tcp</string></array>
   <key>NSLocalNetworkUsageDescription</key>
-  <string>LanScope Mac scans the local IP ranges you choose to discover devices and services.</string>
+  <string>LanScope Mac проверяет выбранные вами диапазоны локальной сети, чтобы найти устройства и их сервисы.</string>
   <key>LSMinimumSystemVersion</key>
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key>
@@ -85,7 +90,11 @@ PLIST
 echo "signing app bundle..."
 find "$APP_BUNDLE" \( -name _CodeSignature -o -name CodeResources \) -prune -exec rm -rf {} +
 xattr -cr "$APP_BUNDLE"
-codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+if [[ "$SIGN_IDENTITY" == "-" ]]; then
+  codesign --force --deep --sign - "$APP_BUNDLE"
+else
+  codesign --force --deep --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+fi
 codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
 
 open_app() {

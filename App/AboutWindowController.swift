@@ -13,7 +13,7 @@ final class AboutWindowController {
         if window == nil {
             let hostingController = NSHostingController(rootView: AboutView())
             let createdWindow = NSWindow(contentViewController: hostingController)
-            createdWindow.title = "About LanScope Mac"
+            createdWindow.title = "О LanScope Mac"
             createdWindow.styleMask = [.titled, .closable, .fullSizeContentView]
             createdWindow.titlebarAppearsTransparent = true
             createdWindow.isMovableByWindowBackground = true
@@ -31,7 +31,7 @@ final class AboutWindowController {
 }
 
 private struct AboutView: View {
-    private let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.1"
+    private let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3.0"
     private let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
 
     var body: some View {
@@ -46,12 +46,12 @@ private struct AboutView: View {
                     Text("LanScope Mac")
                         .font(.system(size: 26, weight: .bold))
 
-                    Text("Version \(version) (\(build))")
+                    Text("Версия \(version) (\(build))")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
 
-                Text("A native macOS LAN scanner for authorized local network administration.")
+                Text("Сканирование, инвентаризация и наблюдение за локальными сетями.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -62,27 +62,27 @@ private struct AboutView: View {
             .padding(.bottom, 24)
 
             VStack(spacing: 0) {
-                aboutRow("Developer", value: "@rootoff")
+                aboutRow("Разработчик", value: "@rootoff")
                 Divider()
                 aboutRow("Copyright", value: "Copyright © 2026 @rootoff")
                 Divider()
-                aboutRow("Rights", value: "All rights reserved")
+                aboutRow("Права", value: "All rights reserved")
                 Divider()
-                aboutRow("License", value: "MIT License")
+                aboutRow("Лицензия", value: "MIT License")
             }
             .background(.quaternary.opacity(0.7), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .padding(.horizontal, 42)
 
             HStack(spacing: 10) {
                 aboutLink("GitHub", url: "https://github.com/Dezoff-max/lanscope-mac", systemImage: "chevron.left.forwardslash.chevron.right")
-                aboutLink("Privacy", url: "https://github.com/Dezoff-max/lanscope-mac/blob/main/PRIVACY.md", systemImage: "hand.raised")
-                aboutLink("License", url: "https://github.com/Dezoff-max/lanscope-mac/blob/main/LICENSE", systemImage: "doc.text")
+                aboutLink("Конфиденциальность", url: "https://github.com/Dezoff-max/lanscope-mac/blob/main/PRIVACY.md", systemImage: "hand.raised")
+                aboutLink("Лицензия", url: "https://github.com/Dezoff-max/lanscope-mac/blob/main/LICENSE", systemImage: "doc.text")
             }
             .padding(.top, 18)
 
             Spacer(minLength: 14)
 
-            Text("Use only on networks you own or are authorized to administer.")
+            Text("Используйте в своих сетях или с разрешения владельца.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .padding(.bottom, 20)

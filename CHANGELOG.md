@@ -1,12 +1,20 @@
 # Changelog
 
 All notable changes to LanScope Mac are documented in this file.
-
 The project uses semantic versioning while it is in MVP development.
 
-## [Unreleased]
+## 0.3.0 — Network workspaces (unreleased)
 
-No unreleased changes yet.
+- Russian native interface, editable device names/types/notes/tags and network profiles.
+- Explicit network-interface binding, truthful ARP cache status, cancellable probes, bounded DNS and global connection budget.
+- Safe IPv4 bounds and persisted pre-upgrade data backups.
+- Correct 4-byte Darwin routing-message alignment restores MAC/vendor enrichment from ARP entries.
+- Complete/cancelled/failed scan sessions, reliable comparison and export scopes.
+- On-demand device monitoring with latency/loss charts, sleep/network pause and opt-in notifications.
+- Wi-Fi channel overlap and signal history, SSID grouping, export and cancellable waiting.
+- Optional Bonjour name/service enrichment restricted to confirmed hosts.
+- Configurable columns on macOS 14.4+, compact compatible table on 14.0–14.3, resizable inspector and reduced-motion-aware feedback.
+- Developer ID signing path supports Hardened Runtime; local builds remain ad-hoc until real signing credentials and notarization are supplied.
 
 ## [0.2.1] - 2026-09-10
 

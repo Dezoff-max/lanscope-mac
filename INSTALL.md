@@ -1,45 +1,38 @@
-# LanScope Mac Installation
+# Установка LanScope Mac
 
-## Standard Installation
+Требуется macOS 14 или новее. Архитектура локальной сборки соответствует Mac, на котором она собрана.
 
-1. Open `LanScope Mac.dmg`.
-2. Drag `LanScope Mac.app` to the `Applications` folder.
-3. Launch the app from `Applications`.
+## Готовое приложение
 
-## If macOS Blocks The App
+1. Откройте DMG или распакуйте ZIP из доверенного выпуска.
+2. Перенесите `LanScope Mac.app` в «Программы».
+3. Запустите приложение. Доступ к локальной сети нужен для проверок устройств; геолокация — для отображения имён Wi-Fi и BSSID. Мониторинг и системные уведомления включаются отдельно самим пользователем.
 
-The current MVP DMG is unsigned and not notarized. If macOS blocks launch, try the safer method first:
+Локальные сборки по умолчанию имеют ad-hoc-подпись и не нотариализированы. Подпись не означает проверку Apple. Для публичного распространения нужен выпуск с Developer ID и нотариализацией. Если macOS блокирует непроверенную сборку, безопасный воспроизводимый вариант — собрать из исходников; не отключайте Gatekeeper глобально.
 
-1. Open `Applications`.
-2. Right-click `LanScope Mac.app`.
-3. Choose `Open`.
-4. Confirm the launch.
-
-## Temporary Gatekeeper Override
-
-If the app still does not launch and you trust this DMG, you can temporarily disable Gatekeeper:
+## Сборка из исходников
 
 ```bash
-sudo spctl --master-disable
-```
-
-After the first successful launch, enable Gatekeeper again:
-
-```bash
-sudo spctl --master-enable
-```
-
-Important: do not leave Gatekeeper disabled permanently. This setting affects the security of the whole system.
-
-## Build From Source
-
-```bash
-swift test
+swift test --scratch-path /tmp/lanscope-tests
 /bin/bash ./script/build_and_run.sh
 ```
 
-To build a local DMG:
+Скрипт собирает приложение через SwiftPM, упаковывает `.app`, проверяет подпись и запускает окно. Каталог компиляции вынесен в `/tmp`, чтобы метаданные Finder/iCloud не мешали подписи тестовых пакетов. Его можно задать через `LANSCOPE_BUILD_DIR`.
+
+Если папка проекта синхронизируется iCloud, артефакты выпуска также собирайте вне неё:
 
 ```bash
-/bin/bash ./script/package_dmg.sh
+LANSCOPE_DIST_DIR=/tmp/lanscope-release BUILD_CONFIGURATION=release /bin/bash ./script/build_and_run.sh --bundle-only
 ```
+
+Настройки, избранное и история предыдущей версии читаются автоматически; перед первой записью нового формата сохраняется резервная копия исходных данных. Старые сканы без параметров покрытия доступны для просмотра, но не для достоверного сравнения.
+
+## Подготовка публичного выпуска
+
+При переданном `SIGN_IDENTITY` скрипт включает Hardened Runtime и временную метку. Нотариализация выполняется только с настроенной учётной записью разработчика:
+
+```bash
+SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" BUILD_CONFIGURATION=release LANSCOPE_DIST_DIR=/tmp/lanscope-release /bin/bash ./script/build_and_run.sh --bundle-only
+```
+
+Перед публикацией проверьте Developer ID-подпись, отправьте архив через `xcrun notarytool` с собственным профилем Keychain, прикрепите ticket через `xcrun stapler` и проверьте запуск на Mac с включённым Gatekeeper. Секреты и сертификаты в репозитории не хранятся.
