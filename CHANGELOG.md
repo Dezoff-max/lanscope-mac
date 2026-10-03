@@ -3,7 +3,7 @@
 All notable changes to LanScope Mac are documented in this file.
 The project uses semantic versioning while it is in MVP development.
 
-## 0.3.0 — Network workspaces (unreleased)
+## [0.3.0] - 2026-10-03
 
 - Russian native interface, editable device names/types/notes/tags and network profiles.
 - Explicit network-interface binding, truthful ARP cache status, cancellable probes, bounded DNS and global connection budget.
@@ -111,7 +111,8 @@ The project uses semantic versioning while it is in MVP development.
 - App icon, DMG volume icon, Finder layout, DMG file icon, and installation instructions.
 - Public GitHub repository with README, installation guide, privacy note, security policy, roadmap, screenshots, and CI.
 
-[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Dezoff-max/lanscope-mac/compare/v0.1.5...v0.1.6

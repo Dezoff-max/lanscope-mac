@@ -8,22 +8,23 @@ LanScope Mac is a native macOS 14+ LAN scanner for local network administrators.
 
 Use LanScope Mac only on networks you own or are authorized to administer.
 
-## Development: 0.3.0
+## What's new in 0.3.0
 
-The current branch adds network profiles, device labels and notes, safe scan comparisons, on-demand latency/loss monitoring, Russian UI, Wi-Fi charts/export, and optional Bonjour enrichment. ARP-only devices are explicitly unconfirmed; cancellation and global probe limits are enforced. Existing settings are migrated with a pre-upgrade backup.
+Version 0.3.0 adds network profiles, device labels and notes, safe scan comparisons, on-demand latency/loss monitoring, Russian UI, Wi-Fi charts/export, and optional Bonjour enrichment. ARP-only devices are explicitly unconfirmed; cancellation and global probe limits are enforced. Existing settings are migrated with a pre-upgrade backup.
 
 Monitoring starts only after an explicit action. Charts show measured samples; the Wi-Fi overlap diagram is not a measurement of airtime utilisation. Table-column customization requires macOS 14.4+; macOS 14.0–14.3 use the compact table and full inspector.
 
-Public distribution still requires a Developer ID identity and notarization. Local source builds use ad-hoc signing.
+The downloadable 0.3.0 build is for Apple Silicon (arm64), uses an ad-hoc signature and is not notarized by Apple. Developer ID signing and notarization remain a separate release prerequisite for Apple-verified distribution.
 
 ## Latest Release
 
-Latest version: [v0.2.1](https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.2.1)
+Latest version: [v0.3.0](https://github.com/Dezoff-max/lanscope-mac/releases/tag/v0.3.0)
 
-Download:
+Download for Apple Silicon, macOS 14+:
 
 - [LanScope.Mac.dmg](https://github.com/Dezoff-max/lanscope-mac/releases/latest/download/LanScope.Mac.dmg)
 - [LanScope.Mac.dmg.sha256](https://github.com/Dezoff-max/lanscope-mac/releases/latest/download/LanScope.Mac.dmg.sha256)
+- [LanScope-Mac-0.3.0-arm64.zip](https://github.com/Dezoff-max/lanscope-mac/releases/download/v0.3.0/LanScope-Mac-0.3.0-arm64.zip)
 
 Release history is documented in [CHANGELOG.md](CHANGELOG.md).
 
