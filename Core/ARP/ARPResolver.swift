@@ -4,6 +4,13 @@ import OSLog
 
 protocol ARPResolving {
     func resolvedIPv4Entries() -> [String: String]
+    func resolvedIPv4Entries(interfaceName: String?) -> [String: String]
+}
+
+extension ARPResolving {
+    func resolvedIPv4Entries(interfaceName: String?) -> [String: String] {
+        resolvedIPv4Entries()
+    }
 }
 
 struct ARPResolver: ARPResolving {
@@ -13,6 +20,18 @@ struct ARPResolver: ARPResolving {
     )
 
     func resolvedIPv4Entries() -> [String: String] {
+        resolvedIPv4Entries(interfaceName: nil)
+    }
+
+    func resolvedIPv4Entries(interfaceName: String?) -> [String: String] {
+        let interfaceIndex: UInt32?
+        if let interfaceName {
+            let index = if_nametoindex(interfaceName)
+            guard index != 0 else { return [:] }
+            interfaceIndex = index
+        } else {
+            interfaceIndex = nil
+        }
         var managementInformationBase = [CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_LLINFO]
         var requiredSize = 0
 
@@ -28,6 +47,7 @@ struct ARPResolver: ARPResolving {
             return [:]
         }
 
+        guard requiredSize > 0 else { return [:] }
         var routingTable = [UInt8](repeating: 0, count: requiredSize)
         guard sysctl(
             &managementInformationBase,
@@ -41,10 +61,10 @@ struct ARPResolver: ARPResolving {
             return [:]
         }
 
-        return parseRoutingTable(routingTable, byteCount: requiredSize)
+        return parseRoutingTable(routingTable, byteCount: requiredSize, interfaceIndex: interfaceIndex)
     }
 
-    private func parseRoutingTable(_ routingTable: [UInt8], byteCount: Int) -> [String: String] {
+    func parseRoutingTable(_ routingTable: [UInt8], byteCount: Int, interfaceIndex: UInt32? = nil) -> [String: String] {
         routingTable.withUnsafeBytes { rawBuffer in
             guard let baseAddress = rawBuffer.baseAddress else {
                 return [:]
@@ -52,43 +72,57 @@ struct ARPResolver: ARPResolving {
 
             var entries: [String: String] = [:]
             var messageOffset = 0
+            let availableBytes = min(max(0, byteCount), rawBuffer.count)
 
-            while messageOffset + MemoryLayout<rt_msghdr>.size <= byteCount {
-                let message = baseAddress
-                    .advanced(by: messageOffset)
-                    .assumingMemoryBound(to: rt_msghdr.self)
-                    .pointee
+            while messageOffset + MemoryLayout<rt_msghdr>.size <= availableBytes {
+                let message = rawBuffer.loadUnaligned(fromByteOffset: messageOffset, as: rt_msghdr.self)
                 let messageLength = Int(message.rtm_msglen)
 
                 guard message.rtm_version == RTM_VERSION,
                       messageLength >= MemoryLayout<rt_msghdr>.size,
-                      messageOffset + messageLength <= byteCount else {
+                      messageOffset + messageLength <= availableBytes else {
                     break
+                }
+                let messageEnd = messageOffset + messageLength
+                if let interfaceIndex, UInt32(message.rtm_index) != interfaceIndex {
+                    messageOffset = messageEnd
+                    continue
                 }
 
                 var ipAddress: String?
                 var macAddress: String?
+                var isValid = true
                 var addressOffset = messageOffset + MemoryLayout<rt_msghdr>.size
 
                 for addressIndex in 0..<Int(RTAX_MAX)
                 where (message.rtm_addrs & (1 << addressIndex)) != 0 {
-                    guard addressOffset + MemoryLayout<sockaddr>.size <= messageOffset + messageLength else {
+                    // Only the length/family prefix is guaranteed to be present.
+                    // sockaddr_dl is variable-length and can be shorter than its Swift struct.
+                    guard addressOffset + 2 <= messageEnd else {
+                        isValid = false
                         break
                     }
 
                     let addressPointer = baseAddress.advanced(by: addressOffset)
-                    let socketAddress = addressPointer.assumingMemoryBound(to: sockaddr.self).pointee
-
-                    if addressIndex == Int(RTAX_DST), socketAddress.sa_family == UInt8(AF_INET) {
-                        ipAddress = ipv4String(from: addressPointer)
-                    } else if addressIndex == Int(RTAX_GATEWAY), socketAddress.sa_family == UInt8(AF_LINK) {
-                        macAddress = macString(from: addressPointer)
+                    let addressLength = Int(rawBuffer[addressOffset])
+                    let family = rawBuffer[addressOffset + 1]
+                    let alignedLength = alignedSockaddrLength(addressLength)
+                    guard (addressLength == 0 || addressLength >= 2),
+                          addressOffset + alignedLength <= messageEnd else {
+                        isValid = false
+                        break
                     }
 
-                    addressOffset += alignedSockaddrLength(Int(socketAddress.sa_len))
+                    if addressIndex == Int(RTAX_DST), family == UInt8(AF_INET) {
+                        ipAddress = ipv4String(from: addressPointer, byteCount: addressLength)
+                    } else if addressIndex == Int(RTAX_GATEWAY), family == UInt8(AF_LINK) {
+                        macAddress = macString(from: addressPointer, byteCount: addressLength)
+                    }
+
+                    addressOffset += alignedLength
                 }
 
-                if let ipAddress, let macAddress {
+                if isValid, let ipAddress, let macAddress {
                     entries[ipAddress] = macAddress
                 }
                 messageOffset += messageLength
@@ -98,8 +132,9 @@ struct ARPResolver: ARPResolving {
         }
     }
 
-    private func ipv4String(from pointer: UnsafeRawPointer) -> String? {
-        var address = pointer.assumingMemoryBound(to: sockaddr_in.self).pointee.sin_addr
+    private func ipv4String(from pointer: UnsafeRawPointer, byteCount: Int) -> String? {
+        guard byteCount >= MemoryLayout<sockaddr_in>.size else { return nil }
+        var address = pointer.loadUnaligned(as: sockaddr_in.self).sin_addr
         var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
         guard inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN)) != nil else {
             return nil
@@ -107,22 +142,28 @@ struct ARPResolver: ARPResolving {
         return String(cString: buffer)
     }
 
-    private func macString(from pointer: UnsafeRawPointer) -> String? {
-        let linkAddress = pointer.assumingMemoryBound(to: sockaddr_dl.self).pointee
-        guard linkAddress.sdl_alen == 6,
-              let dataOffset = MemoryLayout<sockaddr_dl>.offset(of: \sockaddr_dl.sdl_data) else {
+    private func macString(from pointer: UnsafeRawPointer, byteCount: Int) -> String? {
+        guard let dataOffset = MemoryLayout<sockaddr_dl>.offset(of: \sockaddr_dl.sdl_data),
+              let nameLengthOffset = MemoryLayout<sockaddr_dl>.offset(of: \sockaddr_dl.sdl_nlen),
+              let addressLengthOffset = MemoryLayout<sockaddr_dl>.offset(of: \sockaddr_dl.sdl_alen),
+              byteCount >= dataOffset else {
             return nil
         }
+        let nameLength = Int(pointer.load(fromByteOffset: nameLengthOffset, as: UInt8.self))
+        let addressLength = Int(pointer.load(fromByteOffset: addressLengthOffset, as: UInt8.self))
+        guard addressLength == 6, dataOffset + nameLength + addressLength <= byteCount else { return nil }
 
         let bytes = UnsafeRawBufferPointer(
-            start: pointer.advanced(by: dataOffset + Int(linkAddress.sdl_nlen)),
-            count: Int(linkAddress.sdl_alen)
+            start: pointer.advanced(by: dataOffset + nameLength),
+            count: addressLength
         )
         return Self.normalizedMACAddress(Array(bytes))
     }
 
     private func alignedSockaddrLength(_ length: Int) -> Int {
-        let alignment = MemoryLayout<Int>.size
+        // Darwin routing messages use 32-bit sockaddr alignment even on arm64.
+        // sizeof(Int) rounds a 20-byte sockaddr_dl to 24 and skips the next address.
+        let alignment = MemoryLayout<UInt32>.size
         guard length > 0 else {
             return alignment
         }

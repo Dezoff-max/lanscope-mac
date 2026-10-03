@@ -2,57 +2,52 @@ import Foundation
 import Network
 
 enum PortProbe {
-    static func isOpen(host: String, port: Int, timeout: TimeInterval) async -> Bool {
-        guard let nwPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
-            return false
+    private static let queue = DispatchQueue(label: "LanScopeMac.PortProbe", qos: .utility, attributes: .concurrent)
+
+    static func isOpen(host: String, port: Int, timeout: TimeInterval, interface: NWInterface? = nil) async -> Bool {
+        guard !Task.isCancelled, (1...65535).contains(port),
+              let nwPort = NWEndpoint.Port(rawValue: UInt16(port)) else { return false }
+        let parameters = NWParameters.tcp
+        parameters.requiredInterface = interface
+        let connection = NWConnection(host: NWEndpoint.Host(host), port: nwPort, using: parameters)
+        let completion = ProbeResult<Bool> {
+            connection.stateUpdateHandler = nil
+            connection.cancel()
         }
-
-        return await withCheckedContinuation { continuation in
-            let connection = NWConnection(host: NWEndpoint.Host(host), port: nwPort, using: .tcp)
-            let queue = DispatchQueue(label: "LanScopeMac.PortProbe.\(host).\(port)")
-            let completion = PortProbeCompletion(connection: connection, continuation: continuation)
-
-            connection.stateUpdateHandler = { state in
-                switch state {
-                case .ready:
-                    completion.finish(true)
-                case .failed, .cancelled:
-                    completion.finish(false)
-                default:
-                    break
-                }
-            }
-
-            connection.start(queue: queue)
-            queue.asyncAfter(deadline: .now() + timeout) {
-                completion.finish(false)
+        connection.stateUpdateHandler = { state in
+            switch state {
+            case .ready: completion.finish(true)
+            case .failed, .cancelled: completion.finish(false)
+            default: break
             }
         }
-    }
-}
-
-private final class PortProbeCompletion: @unchecked Sendable {
-    private let lock = NSLock()
-    private var didFinish = false
-    private let connection: NWConnection
-    private let continuation: CheckedContinuation<Bool, Never>
-
-    init(connection: NWConnection, continuation: CheckedContinuation<Bool, Never>) {
-        self.connection = connection
-        self.continuation = continuation
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                completion.install(continuation)
+                completion.start { connection.start(queue: queue) }
+                let duration = timeout.isFinite ? min(max(timeout, 0.001), 60) : 1
+                queue.asyncAfter(deadline: .now() + duration) { completion.finish(false) }
+            }
+        } onCancel: { completion.finish(false) }
     }
 
-    func finish(_ result: Bool) {
-        lock.lock()
-        let shouldResume = !didFinish
-        didFinish = true
-        lock.unlock()
-
-        guard shouldResume else {
-            return
+    /// NWInterface has no public name initializer; resolve it once before a scan.
+    static func interface(named name: String) async -> NWInterface? {
+        guard !Task.isCancelled else { return nil }
+        let monitor = NWPathMonitor()
+        let completion = ProbeResult<NWInterface?> {
+            monitor.pathUpdateHandler = nil
+            monitor.cancel()
         }
-
-        connection.cancel()
-        continuation.resume(returning: result)
+        monitor.pathUpdateHandler = { path in
+            completion.finish(path.availableInterfaces.first { $0.name == name })
+        }
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                completion.install(continuation)
+                completion.start { monitor.start(queue: queue) }
+                queue.asyncAfter(deadline: .now() + 1) { completion.finish(nil) }
+            }
+        } onCancel: { completion.finish(nil) }
     }
 }

@@ -24,7 +24,7 @@ final class ScanPresentationTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let state = AppState(persistence: UserDefaultsStore(defaults: defaults))
         var discovered = Device(ipAddress: "192.0.2.10")
-        let arpOnly = Device(ipAddress: "192.0.2.2", macAddress: "00:11:22:33:44:55")
+        let arpOnly = Device(ipAddress: "192.0.2.2", macAddress: "00:11:22:33:44:55", profileID: state.config.profileID)
         state.favorites = [arpOnly]
         state.handleScanEvent(.deviceFound(discovered, completed: 1, total: 2))
         state.selectedDeviceIDs = [discovered.id]

@@ -10,6 +10,6 @@ final class WiFiNetworkTests: XCTestCase {
 
     func testHiddenNetworkDisplayName() {
         let network = WiFiNetwork(ssid: "", bssid: "-", rssi: -72)
-        XCTAssertEqual(network.displaySSID, "Hidden Network")
+        XCTAssertEqual(network.displaySSID, "Скрытая сеть")
     }
 }
