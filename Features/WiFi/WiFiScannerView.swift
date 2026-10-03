@@ -20,6 +20,13 @@ struct WiFiScannerView: View {
         return result.sorted(using: sortOrder)
     }
     private var selected: WiFiNetwork? { appState.wifiNetworks.first { appState.selectedWiFiNetworkIDs.contains($0.id) } }
+    private var frequencyDomain: ClosedRange<Double> {
+        switch band {
+        case "5 GHz": return 5100...5900
+        case "6 GHz": return 5925...7125
+        default: return 2390...2500
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -100,7 +107,8 @@ struct WiFiScannerView: View {
                 Chart(plotted) { network in
                     RectangleMark(xStart: .value("МГц", (network.centerFrequency ?? 0) - network.widthMHz / 2), xEnd: .value("МГц", (network.centerFrequency ?? 0) + network.widthMHz / 2), yStart: .value("dBm", -100), yEnd: .value("dBm", network.rssi))
                         .foregroundStyle(by: .value("Сеть", network.displaySSID)).opacity(0.28)
-                }.chartYScale(domain: -100 ... -20).chartLegend(.hidden)
+                }.chartXScale(domain: frequencyDomain)
+                    .chartYScale(domain: -100 ... -20).chartLegend(.hidden)
                     .chartXAxisLabel("МГц").chartYAxisLabel("dBm")
             }
             Text("Номинальные каналы; центр широких каналов приблизителен. Это не измерение загрузки эфира.")
