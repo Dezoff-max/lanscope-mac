@@ -1,0 +1,43 @@
+name: Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Windows/**"
+      - ".github/workflows/windows.yml"
+  pull_request:
+    paths:
+      - "Windows/**"
+      - ".github/workflows/windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Test core
+        run: dotnet run --project Windows/LanScope.Core.Tests/LanScope.Core.Tests.csproj -c Release
+      - name: Publish Windows x64
+        run: >-
+          dotnet publish Windows/LanScope.Windows/LanScope.Windows.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None
+          -o Windows/dist/win-x64
+      - name: Create portable archive
+        shell: pwsh
+        run: Compress-Archive -Path Windows/dist/win-x64/* -DestinationPath Windows/dist/LanScope-Windows-win-x64.zip -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LanScope-Windows-win-x64
+          path: Windows/dist/LanScope-Windows-win-x64.zip
+          if-no-files-found: error

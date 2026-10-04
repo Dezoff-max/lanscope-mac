@@ -1,0 +1,84 @@
+<Application x:Class="LanScope.Windows.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F5F7FA" />
+        <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="PanelAltBrush" Color="#F1F4F8" />
+        <SolidColorBrush x:Key="TextBrush" Color="#18202D" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#647084" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#DDE3EC" />
+        <SolidColorBrush x:Key="SidebarBrush" Color="#111827" />
+        <SolidColorBrush x:Key="SidebarTextBrush" Color="#E5EAF2" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="AccentSoftBrush" Color="#DBEAFE" />
+        <SolidColorBrush x:Key="SuccessBrush" Color="#16A34A" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
+
+        <Style TargetType="Window">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="13,7" />
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#94A3B8" />
+                    <Setter Property="BorderBrush" Value="#94A3B8" />
+                    <Setter Property="Foreground" Value="#E2E8F0" />
+                    <Setter Property="Opacity" Value="0.68" />
+                    <Setter Property="Cursor" Value="Arrow" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="RowBackground" Value="{DynamicResource PanelBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource PanelAltBrush}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="RowHeight" Value="44" />
+            <Setter Property="ColumnHeaderHeight" Value="38" />
+            <Setter Property="SelectionMode" Value="Single" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="Margin" Value="0,0,0,14" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+    </Application.Resources>
+</Application>

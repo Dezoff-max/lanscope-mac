@@ -1,5 +1,7 @@
 # LanScope Mac
 
+> Windows port: see [`Windows/README.md`](Windows/README.md). A portable self-contained build can be produced with `Windows/Build-Windows.ps1`.
+
 [![CI](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml/badge.svg)](https://github.com/Dezoff-max/lanscope-mac/actions/workflows/ci.yml)
 [![Latest Release](https://img.shields.io/github/v/release/Dezoff-max/lanscope-mac?sort=semver)](https://github.com/Dezoff-max/lanscope-mac/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Dezoff-max/lanscope-mac/total?label=downloads)](https://github.com/Dezoff-max/lanscope-mac/releases/latest)

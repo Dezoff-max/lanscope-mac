@@ -10,3 +10,6 @@ roadmap_macos_lan_scanner.md
 *.xcuserdata/
 DerivedData/
 *.log
+Windows/**/bin/
+Windows/**/obj/
+Windows/dist/
